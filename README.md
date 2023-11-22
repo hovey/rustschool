@@ -92,7 +92,7 @@ Rust is installed now. Great!
 
 To get started you may need to restart your current shell.
 This would reload your PATH environment variable to include
-Cargo's bin directory ($HOME/.cargo/bin).
+The bin directory for Cargo ($HOME/.cargo/bin).
 
 To configure your current shell, run:
 source "$HOME/.cargo/env"
