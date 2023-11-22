@@ -33,7 +33,7 @@ The Cargo home directory is located at:
 This can be modified with the CARGO_HOME environment variable.
 
 The cargo, rustc, rustup and other commands will be added to
-Cargo's bin directory, located at:
+The bin directory for Cargo, located at:
 
   /Users/chovey/.cargo/bin
 
