@@ -8,7 +8,7 @@
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 ```
 
-Installation
+Use **rustup**, the Rust tool used to install, upgrade, and manage Rust.
 
 ```bash
 bash-3.2$ curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
@@ -99,4 +99,17 @@ source "$HOME/.cargo/env"
 bash-3.2$
 ```
 
+## Update
+
+Rust updates occur every six weeks.  To update Rust:
+
+```bash
+rustup update
+```
+
+## Tutorials
+
+```bash
+git clone https://github.com/kyclark/command-line-rust.git
+```
 
