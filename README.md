@@ -113,6 +113,20 @@ rustup update
 git clone https://github.com/kyclark/command-line-rust.git
 ```
 
+## Create and Run with Cargo
+
+```bash
+cargo new <project>
+
+# example
+cargo new hello
+
+# run
+cargo run
+cargo run --quiet
+cargo run -q
+```
+
 ## VS Code Extension
 
 * [Rust Analyzer](https://marketplace.visualstudio.com/items?itemName=rust-lang.rust-analyzer)
