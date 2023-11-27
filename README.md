@@ -125,6 +125,15 @@ cargo new hello
 cargo run
 cargo run --quiet
 cargo run -q
+
+# just build
+cargo build  # build, but not run
+```
+
+## Test
+
+```bash
+cargo test
 ```
 
 ## VS Code Extension
