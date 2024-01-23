@@ -107,6 +107,16 @@ Rust updates occur every six weeks.  To update Rust:
 rustup update
 ```
 
+## Run
+
+To run
+
+```bash
+$ rustc main.rs
+$ ./main
+Hello, world!
+```
+
 ## Tutorials
 
 ```bash
@@ -143,3 +153,17 @@ cargo test
 ```bash
 https://rust-analyzer.github.io/manual.html
 ```
+
+## "The Rust Programming Language" book
+
+To get started, open the local "The Rust Programming Language" with
+
+```bash
+chovey@s1088757/Users/chovey/command-line-rust> rustup docs --book
+```
+
+which will open the local documentation in a web browser.
+
+### 2024-01-12
+
+Book mark: file:///Users/chovey/.rustup/toolchains/stable-aarch64-apple-darwin/share/doc/rust/html/book/ch02-00-guessing-game-tutorial.html#testing-the-first-part
