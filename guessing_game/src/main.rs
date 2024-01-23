@@ -14,5 +14,6 @@ fn main() {
 
     let x = 5;
     let y = 10;
-    println!("x is {x} and y is {y}")
+    println!("x is {x} and y + 2 = {}", y + 2);
+    println!("main propgram has finished.")
 }
