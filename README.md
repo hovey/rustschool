@@ -164,6 +164,8 @@ chovey@s1088757/Users/chovey/command-line-rust> rustup docs --book
 
 which will open the local documentation in a web browser.
 
-### 2024-01-12
+### Bookmarks
 
-Book mark: file:///Users/chovey/.rustup/toolchains/stable-aarch64-apple-darwin/share/doc/rust/html/book/ch02-00-guessing-game-tutorial.html#testing-the-first-part
+* 2024-01-23: Finished Chapter 2, start next on Chapter 3.
+* 2024-01-12: file:///Users/chovey/.rustup/toolchains/stable-aarch64-apple-darwin/share/doc/rust/html/book/ch02-00-guessing-game-tutorial.html#testing-the-first-part
+
