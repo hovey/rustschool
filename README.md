@@ -164,9 +164,16 @@ chovey@s1088757/Users/chovey/command-line-rust> rustup docs --book
 
 which will open the local documentation in a web browser.
 
+## Anirudh 2024-01-26
+
+* https://doc.rust-lang.org/nomicon/
+* For Michael, Traits in Julia, not built-in as with Rust, but Julia libraries can provide this functionality.
+  * https://juliapackages.com/p/traits
+  * Rust traits are nicer than Julia b/c Rust are built in, and first-class citizens
+
+
 ### Bookmarks
 
 * 2024-01-25: Finished through 3.4 Comments.
 * 2024-01-23: Finished Chapter 2, start next on Chapter 3.
 * 2024-01-12: file:///Users/chovey/.rustup/toolchains/stable-aarch64-apple-darwin/share/doc/rust/html/book/ch02-00-guessing-game-tutorial.html#testing-the-first-part
-
