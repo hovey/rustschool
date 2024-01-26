@@ -170,7 +170,8 @@ which will open the local documentation in a web browser.
 * For Michael, Traits in Julia, not built-in as with Rust, but Julia libraries can provide this functionality.
   * https://juliapackages.com/p/traits
   * Rust traits are nicer than Julia b/c Rust are built in, and first-class citizens
-
+* https://www.zsa.io/moonlander/buy
+* https://www.sennheiser.com/en-us/catalog/products/microphones/profile-usb-microphone/profile-usb-microphone-700065
 
 ### Bookmarks
 
