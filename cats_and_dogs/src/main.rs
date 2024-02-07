@@ -32,6 +32,8 @@ struct Animal {
     language: String,
 }
 
+// Rust does not support struct inheritance.  Rather, Rust supports struct composition.
+
 struct Dog {
     animal: Animal,
     red: u32,
@@ -49,23 +51,19 @@ fn print_description(item: &impl Describable) {
 }
 
 fn main() {
-    let a1 = Animal {
-        name: "Sylvester".to_string(),
-        language: "meow".to_string(),
-    };
-
-    let a2 = Animal {
-        name: "Fido".to_string(),
-        language: "bark".to_string(),
-    };
-
     let sylvester = Cat {
-        animal: a1,
+        animal: Animal {
+            name: "Sylvester".to_string(),
+            language: "meow".to_string(),
+        },
         grayscale: 128,
     };
 
     let fido = Dog {
-        animal: a2,
+        animal: Animal {
+            name: "Fido".to_string(),
+            language: "bark".to_string(),
+        },
         red: 11,
         green: 22,
         blue: 33,
@@ -75,8 +73,11 @@ fn main() {
     print_description(&fido);
 
     // How to do this?
-    // let animals = (sylvester, fido);
+    // let animals = (&sylvester, &fido);
     // for item in animals {
     //     print_description(&item);
     // }
 }
+
+// References:
+// https://stackoverflow.com/questions/32552593/is-it-possible-for-one-struct-to-extend-an-existing-struct-keeping-all-the-fiel
