@@ -2,19 +2,43 @@
 // My name is Sylvester, language is meow.  My grayscale is 128.
 // My name is Fido, language is bark.  My RGB colors are 11, 22, 33.
 
-trait Describable {
-    fn describe(&self) -> String {
-        // default implementation
-        "Uninplemented".to_string()
+struct Dog {
+    red: u32,
+    green: u32,
+    blue: u32
+}
+
+struct Cat {
+    grayscale: u32,
+}
+
+trait Animal {
+    fn get_name(&self) -> String;
+    fn get_language(&self) -> String;
+}
+
+impl Animal for Dog {
+    fn get_name(&self) -> String {
+        "Fido".to_string()
+    }
+    fn get_language(&self) -> String {
+        "bark".to_string()
     }
 }
 
-impl Describable for Cat {
+impl Animal for Cat {
+    fn get_name(&self) -> String {
+        "Sylvester".to_string()
+    }
+    fn get_language(&self) -> String {
+        "meow".to_string()
+    }
+}
+
+trait Describable where Self: Animal {
     fn describe(&self) -> String {
-        format!(
-            "My name is {}, language is {}.  My grayscale is {}.",
-            self.animal.name, self.animal.language, self.grayscale
-        )
+        // default implementation
+        "Uninplemented".to_string()
     }
 }
 
@@ -22,72 +46,29 @@ impl Describable for Dog {
     fn describe(&self) -> String {
         format!(
             "My name is {}, language is {}.  My RGB colors are {}, {}, {}.",
-            self.animal.name, self.animal.language, self.red, self.green, self.blue
+            self.get_name(), self.get_language(), self.red, self.green, self.blue
         )
     }
 }
 
-struct Animal {
-    name: String,
-    language: String,
-}
-
-// Rust does not support struct inheritance.  Rather, Rust supports struct composition.
-
-struct Dog {
-    animal: Animal,
-    red: u32,
-    green: u32,
-    blue: u32,
-}
-
-struct Cat {
-    animal: Animal,
-    grayscale: u32,
-}
-
-fn print_description(item: &impl Describable) {
-    println!("{}", item.describe());
-}
-
-struct Animals {
-    items: Vec<Box<dyn Describable>>,
+impl Describable for Cat {
+    fn describe(&self) -> String {
+        format!(
+            "My name is {}, language is {}.  My grayscale is {}.",
+            self.get_name(), self.get_language(), self.grayscale
+        )
+    }
 }
 
 fn main() {
     let sylvester = Cat {
-        animal: Animal {
-            name: "Sylvester".to_string(),
-            language: "meow".to_string(),
-        },
         grayscale: 128,
     };
-
     let fido = Dog {
-        animal: Animal {
-            name: "Fido".to_string(),
-            language: "bark".to_string(),
-        },
         red: 11,
         green: 22,
         blue: 33,
     };
-
-    print_description(&sylvester);
-    print_description(&fido);
-
-    // How to do this?
-
-    // let animals = Animals { items: vec![&sylvester, &fido]}
-
-    // let animals = (&sylvester, &fido);
-    // for item in animals {
-    //     print_description(&item);
-    // }
+    println!("{}", sylvester.describe());
+    println!("{}", fido.describe());
 }
-
-// References:
-// https://stackoverflow.com/questions/32552593/is-it-possible-for-one-struct-to-extend-an-existing-struct-keeping-all-the-fiel
-//
-// Using Trait Objects That Allow for Values of Diferent Types
-// https://doc.rust-lang.org/book/ch17-02-trait-objects.html
