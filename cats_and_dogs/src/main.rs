@@ -71,6 +71,13 @@ fn main() {
         blue: 33,
     };
 
+    let animals = (sylvester, fido);
+
     print_description(&sylvester);
     print_description(&fido);
+
+    // How to do this?
+    // for item in animals {
+    //     print_description(&item);
+    // }
 }
