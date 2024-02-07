@@ -56,7 +56,7 @@ impl Animal for Cat {
 trait Describable: Animal {
     fn describe(&self) -> String {
         format!(
-            "My name is {}, language is {}. {}.",
+            "My name is {}, language is {}. {}",
             self.get_name(), self.get_language(), self.get_info()
         )
     }
