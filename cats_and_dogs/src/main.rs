@@ -50,6 +50,10 @@ fn print_description(item: &impl Describable) {
     println!("{}", item.describe());
 }
 
+struct Animals {
+    items: Vec<Box<dyn Describable>>,
+}
+
 fn main() {
     let sylvester = Cat {
         animal: Animal {
@@ -73,6 +77,9 @@ fn main() {
     print_description(&fido);
 
     // How to do this?
+
+    // let animals = Animals { items: vec![&sylvester, &fido]}
+
     // let animals = (&sylvester, &fido);
     // for item in animals {
     //     print_description(&item);
@@ -81,3 +88,6 @@ fn main() {
 
 // References:
 // https://stackoverflow.com/questions/32552593/is-it-possible-for-one-struct-to-extend-an-existing-struct-keeping-all-the-fiel
+//
+// Using Trait Objects That Allow for Values of Diferent Types
+// https://doc.rust-lang.org/book/ch17-02-trait-objects.html
