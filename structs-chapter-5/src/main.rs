@@ -1,3 +1,16 @@
+// Section 5-3: Methods are similar to functions because they start
+// with the fn keyword and a name, and can have parameters and a
+// return value.  Unlike functions, methods are defined in the
+// context of a struct (or enum or trait), and their first parameter
+// is always self, which represents the instance of the struct
+// the method is called on.
+
+// Methods can take ownership of self, borrow self immutably (as
+// done below in this example), or borro self mutably.
+
+// Associated Functions that aren't methods are often used for
+// constructors that will return a new instance of a struct.
+
 // Listing 5-1: A User struct definition
 struct User {
     active: bool,
@@ -19,6 +32,26 @@ struct AlwaysEqual;
 struct Rectangle {
     width: u32,
     height: u32,
+}
+
+// The Method syntax
+impl Rectangle {
+    fn area(&self) -> u32 {
+        self.width * self.height
+    }
+
+    fn can_hold(&self, other: &Rectangle) -> bool {
+        self.width > other.width && self.height > other.height
+    }
+
+    // Associated Function
+    fn square(size: u32) -> Self {
+        // note absence of &self in the square signature
+        Self {
+            width: size,
+            height: size,
+        }
+    }
 }
 
 fn main() {
@@ -66,12 +99,38 @@ fn main() {
         area(&rect2)
     );
 
-    println!("rect2 is {:?}", rect2);
-    println!("rect2 is {:#?}", rect2);
+    println!(
+        "The area of the rectangle, via a method call, is {} square pixels.",
+        rect2.area()
+    );
 
-    // 2024-03-19 Bookmark:
+    // used for debugging
+    println!("debugging rect2 {:?}", rect2);
+    println!("also debugging rect2 {:#?}", rect2);
+
     // Method Syntax
     // rust/html/book/ch05-03-method-syntax.html
+    let rect1 = Rectangle {
+        width: 30,
+        height: 50,
+    };
+
+    let rect2 = Rectangle {
+        width: 10,
+        height: 40,
+    };
+
+    let rect3 = Rectangle {
+        width: 60,
+        height: 45,
+    };
+
+    // Use the Associated Function
+    let sq1 = Rectangle::square(60);
+
+    println!("Can rect1 hold rect2? {}", rect1.can_hold(&rect2));
+    println!("Can rect1 hold rect3? {}", rect1.can_hold(&rect3));
+    println!("Can rect1 hold sq1? {}", rect1.can_hold(&sq1));
 }
 
 // Listing 5-8: Area of rectangle calculation
