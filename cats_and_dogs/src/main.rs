@@ -3,82 +3,112 @@
 // My name is Fido, language is bark.  My RGB colors are 11, 22, 33.
 
 trait Describable {
-    fn describe(&self) -> String {
+    fn speak(&self) -> String {
         // default implementation
         "Uninplemented".to_string()
     }
 }
 
 impl Describable for Cat {
-    fn describe(&self) -> String {
+    fn speak(&self) -> String {
         format!(
-            "My name is {}, language is {}.  My grayscale is {}.",
-            self.animal.name, self.animal.language, self.grayscale
+            "{}  My name is {}, My grayscale is {}.",
+            greeting(&self.persona.language),
+            self.persona.name,
+            self.grayscale
         )
     }
 }
 
 impl Describable for Dog {
-    fn describe(&self) -> String {
+    fn speak(&self) -> String {
         format!(
-            "My name is {}, language is {}.  My RGB colors are {}, {}, {}.",
-            self.animal.name, self.animal.language, self.red, self.green, self.blue
+            "{}  My name is {}.  My RGB colors are {}, {}, {}.",
+            greeting(&self.persona.language),
+            self.persona.name,
+            self.color.red,
+            self.color.green,
+            self.color.blue
         )
     }
 }
 
-struct Animal {
-    name: String,
-    language: String,
+fn print_description(item: &impl Describable) {
+    println!("{}", item.speak());
 }
 
-// Rust does not support struct inheritance.  Rather, Rust supports struct composition.
+enum Language {
+    Catish,
+    Dogish,
+    // English,
+    // Frenchish,
+    // Spanish,
+}
 
-struct Dog {
-    animal: Animal,
+fn greeting(language: &Language) -> String {
+    match language {
+        Language::Catish => "Hello, my language is 'meow'.".to_string(),
+        Language::Dogish => "Hello, my language is 'bark'.".to_string(),
+        // Language::English => "Hello.".to_string(),
+        // Language::Frenchish => "Bonjour.".to_string(),
+        // Language::Spanish => "Hola.".to_string(),
+    }
+}
+
+// Strategy 1
+struct Persona {
+    name: String,
+    language: Language,
+}
+
+struct Color {
     red: u32,
     green: u32,
     blue: u32,
 }
 
+// Rust does not support struct inheritance.  Rather, Rust supports struct composition.
+
 struct Cat {
-    animal: Animal,
+    persona: Persona,
     grayscale: u32,
 }
-
-fn print_description(item: &impl Describable) {
-    println!("{}", item.describe());
-}
-
-struct Animals {
-    items: Vec<Box<dyn Describable>>,
+struct Dog {
+    persona: Persona,
+    color: Color,
 }
 
 fn main() {
     let sylvester = Cat {
-        animal: Animal {
+        persona: Persona {
             name: "Sylvester".to_string(),
-            language: "meow".to_string(),
+            language: Language::Catish,
         },
         grayscale: 128,
     };
 
     let fido = Dog {
-        animal: Animal {
+        persona: Persona {
             name: "Fido".to_string(),
-            language: "bark".to_string(),
+            language: Language::Dogish,
         },
-        red: 11,
-        green: 22,
-        blue: 33,
+        color: Color {
+            red: 11,
+            green: 22,
+            blue: 33,
+        },
     };
 
+    println!("Method 1:");
     print_description(&sylvester);
     print_description(&fido);
 
-    // How to do this?
+    println!("Method 2:");
+    println!("{}", sylvester.speak());
+    println!("{}", fido.speak());
 
-    // let animals = Animals { items: vec![&sylvester, &fido]}
+    // How to do this?
+    // let animals = FarmRoster { items: vec![&sylvester, &fido]}
 
     // let animals = (&sylvester, &fido);
     // for item in animals {
