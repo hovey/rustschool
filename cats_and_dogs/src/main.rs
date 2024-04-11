@@ -78,34 +78,74 @@ struct Dog {
     color: Color,
 }
 
-fn main() {
-    let sylvester = Cat {
+fn cat_factory(name: String, grayscale: u32) -> Cat {
+    Cat {
         persona: Persona {
-            name: "Sylvester".to_string(),
+            name,
             language: Language::Catish,
         },
-        grayscale: 128,
-    };
+        grayscale,
+    }
+}
 
-    let fido = Dog {
+fn dog_factory(name: String, color: Color) -> Dog {
+    Dog {
         persona: Persona {
-            name: "Fido".to_string(),
+            name,
             language: Language::Dogish,
         },
-        color: Color {
+        color,
+    }
+}
+
+fn main() {
+    // let sylvester = Cat {
+    //     persona: Persona {
+    //         name: "Sylvester".to_string(),
+    //         language: Language::Catish,
+    //     },
+    //     grayscale: 128,
+    // };
+
+    let sylvester = cat_factory("Sylvester".to_string(), 128);
+
+    // let fido = Dog {
+    //     persona: Persona {
+    //         name: "Fido".to_string(),
+    //         language: Language::Dogish,
+    //     },
+    //     color: Color {
+    //         red: 11,
+    //         green: 22,
+    //         blue: 33,
+    //     },
+    // };
+
+    let color_defaut = Color {
+        red: 1,
+        green: 2,
+        blue: 3,
+    };
+
+    let fido = dog_factory("Fido".to_string(), color_defaut);
+
+    let spot = dog_factory(
+        "Spot".to_string(),
+        Color {
             red: 11,
             green: 22,
             blue: 33,
         },
-    };
-
+    );
     println!("Method 1:");
     print_description(&sylvester);
     print_description(&fido);
+    print_description(&spot);
 
     println!("Method 2:");
     println!("{}", sylvester.speak());
     println!("{}", fido.speak());
+    println!("{}", spot.speak());
 
     // How to do this?
     // let animals = FarmRoster { items: vec![&sylvester, &fido]}
