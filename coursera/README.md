@@ -69,4 +69,3 @@ fn _read_stdin<R: BufRead>(reader: &mut R) -> String {
     line.trim().to_string()
 }
 ```
-
