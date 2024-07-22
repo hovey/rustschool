@@ -69,3 +69,28 @@ fn _read_stdin<R: BufRead>(reader: &mut R) -> String {
     line.trim().to_string()
 }
 ```
+
+* Microsoft's Create First Rust Program https://learn.microsoft.com/en-us/training/modules/rust-create-program/
+* Debugging in VS Code https://code.visualstudio.com/docs/introvideos/debugging
+* Debugging
+ * https://code.visualstudio.com/docs/languages/rust
+  * Install debugging support
+  * To start debugging, you will first need to install one of two language extension with debugging support:
+    * Microsoft C++ (ms-vscode.cpptools) – on Windows
+    * CodeLLDB (vadimcn.vscode-lldb) – on macOS/Linux
+* `cargo test` in addition to `cargo new`, `cargo build` and `cargo run`
+* Rust standard library documentation https://doc.rust-lang.org/std/index.html
+* Microsoft Explore modules, packages, and third-party crates: https://learn.microsoft.com/en-us/training/modules/rust-modules-packages-crates/
+
+Overview of Rust programs
+
+* A package:
+  * Contains functionality within one or more crates.
+  * Includes information about how to build those crates. The information is in the Cargo.toml file.
+* A crate:
+  * Is a compilation unit, which is the smallest amount of code that the Rust compiler can operate on.
+  * Once compiled, produces either an executable or a library.
+  * Contains an implicit, unnamed top-level module.
+* A module:
+  * Is a (possibly nested) unit of code organization inside a crate.
+  * Can have recursive definitions that span additional modules.
