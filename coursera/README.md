@@ -94,3 +94,45 @@ Overview of Rust programs
 * A module:
   * Is a (possibly nested) unit of code organization inside a crate.
   * Can have recursive definitions that span additional modules.
+
+Tests:
+
+* Called *integration tests*, the tests in the `tests` folder, parallel to the `src` folder, are not included in the distribution of the crate.
+* The tests that are included in documentation and in source code *will* be included in the crate.
+
+To test a `~/crate_name/src/foo.rs` function, the test `~/crate_name/tests/test_foo.rs`:
+
+```rust
+#[test]
+fn test_foo() {
+  assert!(true) // always passes
+  assert_eq!(foo, bar)
+}
+```
+
+For a private test with the private function `_bar`:
+
+```rust
+#[cfg(test)]
+mod tests {
+    use super::_test_bar
+
+    #[test]
+    fn test_bar() {
+        // etc
+        // e.g.,
+        assert_eq!(line, "test")
+        // or with explantion
+        assert_eq!(line, "test", "Line should be 'test'");
+    }
+}
+```
+
+To just test the library (not do the doc tests, for example), `cargo test --lib`
+
+* Microsoft's Write automated tests: https://learn.microsoft.com/en-us/training/modules/rust-automated-tests/
+* The Rust Book: https://doc.rust-lang.org/book/ch11-03-test-organization.html
+
+Beyond Rust Fundamental:
+
+Rust Specialization - possily interested in: Python and Rust with Linux Command Line Tools https://www.coursera.org/learn/python-rust-linux
