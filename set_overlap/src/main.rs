@@ -51,6 +51,11 @@ fn main() {
     // let a_and_b: HashSet<_> = set_a.intersection(&set_b).collect();
     // let b_and_c: HashSet<_> = set_b.intersection(&set_c).collect();
     // let c_and_a: HashSet<_> = set_c.intersection(&set_a).collect();
+    
+    // ask mrbuche:
+    // let a_and_b: HashSet<&u8> = set_a.intersection(&set_b).collect();
+    // let b_and_c: HashSet<&u8> = set_b.intersection(&set_c).collect();
+    // let c_and_a: HashSet<&u8> = set_c.intersection(&set_a).collect();
     let a_and_b: HashSet<u8> = set_a.intersection(&set_b).cloned().collect();
     let b_and_c: HashSet<u8> = set_b.intersection(&set_c).cloned().collect();
     let c_and_a: HashSet<u8> = set_c.intersection(&set_a).cloned().collect();
