@@ -1,6 +1,9 @@
 use std::env;
 use std::fs;
+use std::io::{self, BufReader, Read};
+use std::path::PathBuf;
 use serde::Deserialize;
+use dirs::home_dir;
 
 
 #[derive(Debug, Deserialize)]
@@ -17,19 +20,34 @@ struct Recipe {
     yml_schema_version: String,
 }
 
+fn expand_tilde(path: &str) -> PathBuf {
+    if path.starts_with("~") {
+        println!("expand_tilde operating on: {}", path);
+        println!{"expanding ~ to: {:?}", home_dir()}
+        if let Some(home) = home_dir() {
+            let expanded =  home.join(&path[1..]);
+            println!("expanded: {:?}", expanded);
+            // return home.join(&path[1..]);
+            return expanded;
+        }
+    }
+    PathBuf::from(path)
+}
 
-// Invoke this main() function with
-// cargo run -- letter_f_autotwin.yml
+
+// Examples:
+//  cargo run -- letter_f_autotwin.yml
+//  cargo run -- ~/autotwin/mesh/tests/files/letter_f_autotwin.yml
 fn main() {
     // println!("Hello, world!");
     let args: Vec<String> = env::args().collect();
-    // dbg!(&args);
+    dbg!(&args);
 
     let binary_path = &args[0];
     let yml_path = &args[1];
 
     println!("This Rust application is: {}", binary_path);
-    println!("used to read an Autotwin .yml configuration recipe.\n");
+    println!("used to read an Autotwin .yml recipe.\n");
     println!("Examples:");
     println!("  {} <some_file>.yml", binary_path);
     println!("  {} letter_f_autotwin.yml\n", binary_path);
@@ -48,48 +66,20 @@ fn main() {
     println!("{contents}");
 
     // parse the YAML string to the the Recipe struct
+    println!("Converting yaml file contents into internal Recipe struct.");
     let recipe: Recipe = serde_yaml::from_str(&contents)
         .expect(&err_cannot_parse);
 
     // print the parsed contents
     println!("{:?}", recipe);
 
-    // requires that the file extension ends in either .yml or .yaml
+    let npy_path = recipe.npy_input;
+    println!("Processing .npy file: {}", npy_path);
+    
+    let npy_path_expanded = expand_tilde(&npy_path);
+    println!("(re-)Processing .npy file: {:?}", npy_path_expanded);
 
-    // From https://serde.rs and https://github.com/dtolnay/serde-yaml
-    // it appears that serde and serde_yaml crates provide this functionality
-    // already.  To the cargo.toml, add these dependencies:
-    // [dependencies]
-    // serde = { version = "1.0", features = ["derive"] }
-    // serde_yaml = "0.9"
-
-    // use the Deserialize trait in serde
-    // open the yml file
-    // let mut yml_file = fs::File::open(yml_path).expect(&file_io_error);
-    // let yml_file = fs::File::open(yml_path);
-    // let yml_file = fs::File::open(yml_path).expect(&err_cannot_open);
-    // let yml_file = match yml_file {
-    //     Ok(yml_file) => yml_file,
-    //     Err(error) => {
-    //         match error.kind() {
-    //             std::io::ErrorKind::NotFound => {
-    //                 panic!("{}, {}", &err_cannot_find, error)
-    //             }
-    //             _ => {
-    //                 panic!("{}, {}", &err_cannot_open, error)
-    //             }
-    //         }
-    //     }
-    // };
-
-    // // read the file contents into a string
-    // let db = fs::read_to_string(yml_file)
-    //     .expect(&err_cannot_read);
-
-    // // parse the YAML string into the struct
-    // let recipe: Recipe = serde_yaml::from_str(&db);
-
-    // // print the parsed configuration
-    // println!("{:?}", recipe);
+    let npy_file = fs::File::open(npy_path).expect("Unable to open .npy file.");
+    // let reader = BufReader::new(npy_file);
 
 }
