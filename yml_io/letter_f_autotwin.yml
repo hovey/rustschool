@@ -1,0 +1,10 @@
+sculpt_binary: /Applications/Cubit-16.14/Cubit.app/Contents/MacOS/sculpt # Path
+npy_input: ~/autotwin/mesh/tests/files/letter_f_autotwin.npy # Path
+scale_x: 0.1 # float
+scale_y: 0.1
+scale_z: 0.1
+translate_x: -0.15 # float
+translate_y: -0.25
+translate_z: -0.20
+spn_xyz_order: 5 # int
+yml_schema_version: 1.8 # float
