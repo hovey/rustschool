@@ -1,3 +1,6 @@
+# ignore virtual environment contents
+.venv
+
 # macOS database files
 .DS_Store
 
