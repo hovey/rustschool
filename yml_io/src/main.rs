@@ -1,3 +1,11 @@
+/// A cargo program that operates on a .yml file recipe.  From the recipe
+/// in the .yml file, creates a Recipe struct.
+///
+/// Examples:
+///  cargo run -- letter_f_autotwin.yml
+///  cargo run -- ~/autotwin/mesh/tests/files/letter_f_autotwin.yml
+
+
 use std::env;
 use std::fs;
 use std::io::{self, BufReader, Read};
@@ -20,6 +28,9 @@ struct Recipe {
     yml_schema_version: String,
 }
 
+/// Since the tilde ('~') character is not handled by Rust, but it is used
+/// in Linux and macOS, this functions implements an interpretation of the
+/// tilde though use of the dirs::home_dir function.
 fn expand_tilde(path: &str) -> PathBuf {
     if path.starts_with("~") {
         println!("expand_tilde operating on: {}", path);
@@ -35,9 +46,7 @@ fn expand_tilde(path: &str) -> PathBuf {
 }
 
 
-// Examples:
-//  cargo run -- letter_f_autotwin.yml
-//  cargo run -- ~/autotwin/mesh/tests/files/letter_f_autotwin.yml
+/// The main entry point of the Rust program.
 fn main() {
     // println!("Hello, world!");
     let args: Vec<String> = env::args().collect();
