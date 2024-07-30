@@ -49,6 +49,8 @@ fn expand_tilde(path: &str) -> PathBuf {
 /// The main entry point of the Rust program.
 fn main() {
     // println!("Hello, world!");
+    // TODO: Use the clap command line argment framework https://github.com/clap-rs/clap
+    // instead of standard library.
     let args: Vec<String> = env::args().collect();
     dbg!(&args);
 

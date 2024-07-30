@@ -112,3 +112,21 @@ diskutil list
 diskutil info /dev/disk0
 ```
 
+The [Click](https://paiml.com/docs/home/books/python-command-line-tools/chapter01-getting-started-click/) framework, as an alternative for `argparse`.
+
+# Rust
+
+* References
+  * https://github.com/alfredodeza/rust-cli-example/blob/main/README.md
+  * https://github.com/alfredodeza/rust-cli-example/tree/main/examples/simple
+  * clap: https://github.com/clap-rs/clap
+  * clap alternatives: quicli, structopt
+
+```bash
+cargo fmt # format the rust source code
+# The rust analyzer calls out 'clippy' and 'check'
+cargo clippy # implementation linter
+cargo check # a precompiler, alternative to cargo build
+```
+
+* Lab: Building a basic Rust CLI: https://www.coursera.org/learn/python-rust-linux/supplement/QSnbR/external-lab-build-a-basic-rust-cli 
