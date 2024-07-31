@@ -130,3 +130,62 @@ cargo check # a precompiler, alternative to cargo build
 ```
 
 * Lab: Building a basic Rust CLI: https://www.coursera.org/learn/python-rust-linux/supplement/QSnbR/external-lab-build-a-basic-rust-cli 
+
+# Python
+
+```bash
+import some_module
+
+# see path where the module originates
+some_module # or
+print(some_module)
+```
+
+Example:
+
+```bash
+cd ~/autotwin/mesh
+source .venv/bin/activate.fish
+
+pip list
+Package         Version     Editable project location
+--------------- ----------- ---------------------------
+atmesh          0.0.7       /Users/chovey/autotwin/mesh
+...
+numpy           1.26.4
+
+python
+
+import atmesh
+print(atmesh)
+<module 'atmesh' from '/Users/chovey/autotwin/mesh/src/atmesh/__init__.py'>
+
+import numpy
+print(numpy)
+<module 'numpy' from '/Users/chovey/autotwin/mesh/.venv/lib/python3.11/site-packages/numpy/__init__.py'>
+
+quit()
+
+deactivate
+
+cd ~/autotwin/automesh
+source .venv/bin/activate.fish
+
+pip list
+Package      Version Editable project location
+------------ ------- -------------------------------
+automesh     0.1.3   /Users/chovey/autotwin/automesh
+...
+numpy        2.0.0
+
+python
+
+import automesh
+print(automesh)
+<module 'automesh' from '/Users/chovey/autotwin/automesh/.venv/lib/python3.11/site-packages/automesh/__init__.py'>
+
+print(numpy)
+module 'numpy' from '/Users/chovey/autotwin/automesh/.venv/lib/python3.11/site-packages/numpy/__init__.py'>
+
+quit()
+```
