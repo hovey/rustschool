@@ -189,3 +189,5 @@ module 'numpy' from '/Users/chovey/autotwin/automesh/.venv/lib/python3.11/site-p
 
 quit()
 ```
+
+* Microsoft Explore modules, packages, and third-party crates https://learn.microsoft.com/en-us/training/modules/rust-modules-packages-crates/

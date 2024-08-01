@@ -1,0 +1,8 @@
+[package]
+name = "read_npy_error"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+ndarray = "0.15"
+ndarray-npy = "0.7"
