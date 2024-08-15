@@ -7,6 +7,7 @@ pub fn add(left: usize, right: usize) -> usize {
     left + right
 }
 
+/// Given a number, adds `2` to it and returns the summation.
 pub fn add_two(a: i32) -> i32 {
     a + 2
 }
@@ -16,8 +17,9 @@ pub fn greeting(name: &str) -> String {
     // String::from("Hello!")
 }
 
+/// This is a Rectangle
 #[derive(Debug)]
-struct Rectangle {
+pub struct Rectangle {
     width: u32,
     height: u32,
 }
@@ -28,6 +30,7 @@ impl Rectangle {
     }
 }
 
+/// This is documentation for Guess.
 pub struct Guess {
     value: i32,
 }
@@ -53,6 +56,7 @@ mod tests {
 
     use super::*;
 
+    /// This is a blanket test that is known to pass.
     #[test]
     fn this_test_will_pass() {
         let value = prints_and_returns_10(4);

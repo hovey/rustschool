@@ -85,7 +85,7 @@ pub struct Button {
 
 impl Draw for Button {
     fn draw(&self) {
-        println!("I am the draw method implementing the Draw trait for Button with width {}, height {}, and label{}.", self.width, self.height, self.label);
+        println!("I am the draw method implementing the Draw trait for Button with width {}, height {}, and label {}.", self.width, self.height, self.label);
     }
 }
 
@@ -97,7 +97,7 @@ struct SelectBox {
 
 impl Draw for SelectBox {
     fn draw(&self) {
-        println!("I am the draw method implementing the Draw trait for SelectBox with width {}, height {}, and options{:?}.", self.width, self.height, self.options);
+        println!("I am the draw method implementing the Draw trait for SelectBox with width {}, height {}, and options {:?}.", self.width, self.height, self.options);
     }
 }
 
@@ -137,7 +137,7 @@ fn main() {
                 height: 10,
                 options: vec![
                     String::from("Yes"),
-                    String::from("Maybe");
+                    String::from("Maybe"),
                     String::from("No"),
                 ],
             }),
