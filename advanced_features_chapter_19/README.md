@@ -459,3 +459,5 @@ fn main() {} {
 ```
 
 Hmmmm... will have to make this more concrete as I continue...
+
+2024-09-08: finish Section 19.2.  Next, start on Section 19.3.
