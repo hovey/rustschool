@@ -461,3 +461,85 @@ fn main() {} {
 Hmmmm... will have to make this more concrete as I continue...
 
 2024-09-08: finish Section 19.2.  Next, start on Section 19.3.
+
+## Section 19.3 Advanced Types
+
+The `newtype` pattern can be useful for types with units.  
+
+### Synonyms with Type Aliases
+
+```rust
+type Kilometers = i32;
+
+let x: i32 = 5;
+let y: Kilometers = 5;
+println!("x + y = {}", x + y);
+```
+
+Because `Kilometers` and `i32` are the same type, we can add values of both
+types and we can pass `Kilometers` values to functions that take `i32`
+parameters.  But, we don't get the type checking that the newtype pattern
+gives.
+
+The main use case for synonyms is to reduce repetition.
+
+```rust
+type Thunk = Box<dyn Fn() + Send + 'static>;
+
+let f: Thunk = Box::new(|| println!("hi"));
+
+fn takes_long_time(f: Thunk) {
+    // --snip--
+}
+
+fn returns_long_type() -> Thunk {
+    // --snip--
+}
+```
+
+### The `Never` type that never returns
+
+Rust has a special type name `!` that is known in type theory as the
+*empty type* because it has no values.
+
+### Dynamically sized types and sized traits
+
+A common dynamically sized type is the `str`.
+
+## Section 19.4 Advanced Features and Closures
+
+### Function Pointers
+
+The `fn` type is called a *function pointer*.  
+
+Example: use the `map` function to turn a vector of numbers into a vector
+of strings:
+
+```rust
+let list_of_numbers = vec![1, 2, 3];
+let list_of_strings: Vec<String> =
+    list_of_numbers.iter().map(|i| i.to_string()).collect();
+
+// or we could name a function as the argumetn to `map` instead of the closure
+let list_of_numbers = vec![1, 2, 3];
+let list_of_strings: Vec<String> =
+    list_of_numbers.iter().map(ToString::to_string).collect();
+```
+
+Note that we need to use the fully qualified syntax because there are
+multiple functions available named `to_string`.  We want the `to_string`
+function defined by the `ToString` trait, which the standard library has
+implemented for any type that implements `Display`.
+
+### Returning closures
+
+Closures are represented by traits, which means one cannot return closures
+directly.
+
+Hmmm...
+
+## Section 19.5 Macros
+
+Macros are a way of writing code that writes other code.  The `println!` macro
+is familar.  A macro *expands* to produce more code than what is written
+manually.
