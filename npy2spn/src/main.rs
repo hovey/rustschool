@@ -24,6 +24,7 @@ use ndarray_npy::{
 use std::{
     fs::File,
     io::{
+        BufWriter,
         Error,
         Write,
     },
@@ -78,18 +79,28 @@ fn voxel_data_from_npy(file_path: &str) -> Result<VoxelData, ReadNpyError> {
 }
 
 
+// fn write_voxels_to_spn(data: &VoxelData, file_path: &str) -> Result<(), WriteNpyError> {
+//     let mut file = File::create(file_path)?;  // specify the output file name
+// 
+//     let mut result = write!(file, "");
+//     data.iter()  // goes through ever element, regardless of the array dimension, flattened
+//         .for_each(|x|
+//             result = writeln!(file, "{}", x.to_string())  // write the line to the file
+//         );
+//         // is it better to cast .as_bytes instead of .to_string here?
+// 
+//     Ok(result?)
+// }
+
 fn write_voxels_to_spn(data: &VoxelData, file_path: &str) -> Result<(), WriteNpyError> {
-    // data.write_npy(BufWriter::new(File::create(file_path)?))
-    let mut file = File::create(file_path)?;  // specify the output file name
+    let file = File::create(file_path)?;  // specify the output file name
+    let mut writer = BufWriter::new(file);  // Use BufWriter for better performance
 
-    let mut result = write!(file, "");
-    data.iter()  // goes through ever element, regardless of the array dimension, flattened
-        .for_each(|x|
-            result = writeln!(file, "{}", x.to_string())  // write the line to the file
-        );
-        // is it better to cast .as_bytes instead of .to_string here?
+    for x in data.iter() {
+        writeln!(writer, "{}", x)?;  // Use ? to propagate errors
+    }
 
-    Ok(result?)
+    Ok(())
 }
 
 struct ErrorWrapper {
