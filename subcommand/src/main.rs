@@ -6,6 +6,9 @@
 //!  cargo build
 //!  cargo run -- add --num1 5 --num2 --precision 3
 //!  cargo run -- subtract --num1 5 --num2 3 --message hello
+//!  cargo run -- -h
+//!  cargo run -- add -h
+//!  cargo run -- subtract -h
 //! 
 //! 
 use clap::{Parser, Subcommand};

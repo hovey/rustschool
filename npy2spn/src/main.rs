@@ -28,7 +28,7 @@ use std::{
         Write,
     },
     path::Path,
-    // time::Instant
+    time::Instant,
 };
 
 type VoxelData = Array3<u8>;
@@ -37,6 +37,12 @@ type VoxelData = Array3<u8>;
 /// The voxels type.
 pub struct Voxels {
     data: VoxelData,
+}
+
+pub struct VoxelDimensions {
+    x: usize,
+    y: usize,
+    z: usize,
 }
 
 /// Inherent implementation of the voxels type.
@@ -50,6 +56,15 @@ impl Voxels {
     /// Returns a reference to the internal voxels data.
     pub fn get_data(&self) -> &VoxelData {
         &self.data
+    }
+    /// Returns the (z, y, x) dimensions of the voxels data.
+    pub fn dimensions(&self) -> VoxelDimensions {
+        let (z, y, x) = self.data.dim();
+        VoxelDimensions {
+            x,
+            y,
+            z,
+        }
     }
     /// Writes the internal voxels data to a SPN file.
     pub fn write_spn(&self, file_path: &str) -> Result<(), WriteNpyError> {
@@ -143,6 +158,7 @@ fn bold_cyan(input: &str) -> String {
 
 
 fn main() -> Result<(), ErrorWrapper> {
+    let time_0 = Instant::now();
     let args = Args::parse();
 
     // Print the input and output files
@@ -163,6 +179,10 @@ fn main() -> Result<(), ErrorWrapper> {
         _ => panic!("Error: input file type must be .npy"),
     };
 
+    let dims = input.dimensions();
+    let (nz, ny, nx) = (dims.z, dims.y, dims.x);
+    println!("     Read in .npy with dimension (nz, ny, nx) = ({}, {}, {})", nz, ny, nx);
+
     println!("     {} {}", bold_cyan("Writing"), args.output);
 
     let _output = match Path::new(&args.output)
@@ -175,6 +195,8 @@ fn main() -> Result<(), ErrorWrapper> {
         }
         _ => panic!("Error: input file type must be .npy or .spn"),
     };
+
+    println!("     {} {:?}", bold_cyan("Done"), time_0.elapsed());
 
     Ok(())
 }
