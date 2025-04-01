@@ -73,7 +73,7 @@ struct ConvertMeshArgs {
     #[arg(long, short, value_name = "FILE")]
     input: String,
 
-    // Mesh (exo | mesh | stl | vtk) output file
+    /// Mesh (exo | mesh | stl | vtk) output file
     #[arg(long, short, value_name = "FILE")]
     output: String,
 
@@ -92,16 +92,37 @@ struct ConvertSegmentationArgs {
     #[arg(long, short, value_name = "FILE")]
     output: String,
 
-    /// Number of voxels in the x-direction (used only for spn input files)
-    #[arg(long, short = 'x', value_name = "NEL")]
+    /// Number of voxels in the x-direction
+    #[arg(
+        long,
+        short = 'x',
+        value_name = "NEL",
+        long_help = "Specifies the number of voxels in the x-direction.\n\
+                     Required for spn input format conversion.\n\
+                     Example: --nelx 100"
+    )]
     nelx: Option<usize>,
 
     /// Number of voxels in the y-direction
-    #[arg(long, short = 'y', value_name = "NEL")]
+    #[arg(
+        long,
+        short = 'y',
+        value_name = "NEL",
+        long_help = "Specifies the number of voxels in the y-direction.\n\
+                     Required for spn input format conversion.\n\
+                     Example: --nely 200"
+    )]
     nely: Option<usize>,
 
     /// Number of voxels in the z-direction
-    #[arg(long, short = 'z', value_name = "NEL")]
+    #[arg(
+        long,
+        short = 'z',
+        value_name = "NEL",
+        long_help = "Specifies the number of voxels in the z-direction.\n\
+                     Required for spn input format conversion.\n\
+                     Example: --nelz 300"
+    )]
     nelz: Option<usize>,
 
     /// Pass to quiet the terminal output
