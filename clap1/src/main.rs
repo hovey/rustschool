@@ -39,6 +39,64 @@ enum Commands {
         #[command(subcommand)]
         subcommand: ConvertSubcommand,
     },
+    /// Defeatures and creates a new segmentation
+    Defeature {
+        /// Segmentation input file (npy | spn)
+        #[arg(long, short, value_name = "FILE")]
+        input: String,
+
+        /// Defeatured segmentation output file (npy | spn)
+        #[arg(long, short, value_name = "FILE")]
+        output: String,
+
+        /// Defeature clusters with less than MIN voxels
+        #[arg(
+            long,
+            short,
+            value_name = "MIN",
+            long_help = "Removes clusters of size less than MIN voxels.\n\
+                         A cluster is a set of face-sharing voxels of the same material.\n\
+                         Edge and corner sharing do not constitute a cluster."
+        )]
+        min: usize,
+
+        /// Number of voxels in the x-direction
+        #[arg(
+            long,
+            short = 'x',
+            value_name = "NEL",
+            long_help = "Specifies the number of voxels in the x-direction.\n\
+                         Required for spn input file conversion.\n\
+                         Example: --nelx 100"
+        )]
+        nelx: Option<usize>,
+
+        /// Number of voxels in the y-direction
+        #[arg(
+            long,
+            short = 'y',
+            value_name = "NEL",
+            long_help = "Specifies the number of voxels in the y-direction.\n\
+                         Required for spn input file conversion.\n\
+                         Example: --nely 200"
+        )]
+        nely: Option<usize>,
+
+        /// Number of voxels in the z-direction
+        #[arg(
+            long,
+            short = 'z',
+            value_name = "NEL",
+            long_help = "Specifies the number of voxels in the z-direction.\n\
+                         Required for spn input file conversion.\n\
+                         Example: --nelz 300"
+        )]
+        nelz: Option<usize>,
+
+        /// Pass to quiet the terminal output
+        #[arg(action, long, short)]
+        quiet: bool,
+    },
     /// Prints a greeting message
     Greet {
         /// Name of the person to greet
@@ -60,20 +118,20 @@ enum Commands {
 
 #[derive(Subcommand)]
 enum ConvertSubcommand {
-    /// Convert mesh file types (inp) -> (exo | mesh | stl | vtk)
+    /// Converts mesh file types (inp) -> (exo | mesh | vtk)
     Mesh(ConvertMeshArgs),
-    /// Convert segmentation file types (npy | spn) -> (npy | spn)
+    /// Converts segmentation file types (npy | spn) -> (npy | spn)
     Segmentation(ConvertSegmentationArgs),
 }
 
 
 #[derive(clap::Args)]
 struct ConvertMeshArgs {
-    /// Mesh (inp) input file
+    /// Mesh input file (inp)
     #[arg(long, short, value_name = "FILE")]
     input: String,
 
-    /// Mesh (exo | mesh | stl | vtk) output file
+    /// Mesh output file (exo | mesh | vtk)
     #[arg(long, short, value_name = "FILE")]
     output: String,
 
@@ -84,11 +142,11 @@ struct ConvertMeshArgs {
 
 #[derive(clap::Args)]
 struct ConvertSegmentationArgs {
-    /// Segmentation (npy | spn) input file
+    /// Segmentation input file (npy | spn)
     #[arg(long, short, value_name = "FILE")]
     input: String,
 
-    /// Segmentation (npy | spn) output file
+    /// Segmentation output file (npy | spn)
     #[arg(long, short, value_name = "FILE")]
     output: String,
 
@@ -98,7 +156,7 @@ struct ConvertSegmentationArgs {
         short = 'x',
         value_name = "NEL",
         long_help = "Specifies the number of voxels in the x-direction.\n\
-                     Required for spn input format conversion.\n\
+                     Required for spn input file conversion.\n\
                      Example: --nelx 100"
     )]
     nelx: Option<usize>,
@@ -109,7 +167,7 @@ struct ConvertSegmentationArgs {
         short = 'y',
         value_name = "NEL",
         long_help = "Specifies the number of voxels in the y-direction.\n\
-                     Required for spn input format conversion.\n\
+                     Required for spn input file conversion.\n\
                      Example: --nely 200"
     )]
     nely: Option<usize>,
@@ -120,7 +178,7 @@ struct ConvertSegmentationArgs {
         short = 'z',
         value_name = "NEL",
         long_help = "Specifies the number of voxels in the z-direction.\n\
-                     Required for spn input format conversion.\n\
+                     Required for spn input file conversion.\n\
                      Example: --nelz 300"
     )]
     nelz: Option<usize>,
@@ -145,6 +203,7 @@ fn main() {
                 convert_segmentation(args.input, args.output, args.nelx, args.nely, args.nelz, args.quiet);
             }
         }
+        Some(Commands::Defeature { input, output, min, nelx, nely, nelz, quiet }) => { is_quiet = quiet; defeature(input, output, min, nelx, nely, nelz, quiet)}
         Some(Commands::Greet { name }) => {
             println!("Hello {}", name);
         }
@@ -162,7 +221,6 @@ fn main() {
         println!("       \x1b[1;98mTotal\x1b[0m {:?}", time.elapsed());
     }
 }
-
 
 fn convert_mesh(
     input: String,
@@ -190,4 +248,24 @@ fn convert_segmentation(
     println!("  nely: {:?}", nely);
     println!("  nelz: {:?}", nelz);
     println!("  quiet: {quiet}")
+}
+
+fn defeature(
+    input: String,
+    output: String,
+    min: usize,
+    nelx: Option<usize>,
+    nely: Option<usize>,
+    nelz: Option<usize>,
+    quiet: bool,
+) {
+    println!("function: defeature");
+    println!("  input: {input}");
+    println!("  output: {output}");
+    println!("  min: {min}");
+    println!("  nelx: {:?}", nelx);
+    println!("  nely: {:?}", nely);
+    println!("  nelz: {:?}", nelz);
+    println!("  quiet: {quiet}")
+
 }
