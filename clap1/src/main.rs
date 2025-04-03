@@ -31,7 +31,6 @@ struct Cli {
     command: Option<Commands>,
 }
 
-
 #[derive(Subcommand)]
 enum Commands {
     /// Converts between mesh or segmentation file types
@@ -50,47 +49,19 @@ enum Commands {
         output: String,
 
         /// Defeature clusters with less than MIN voxels
-        #[arg(
-            long,
-            short,
-            value_name = "MIN",
-            long_help = "Defeatures clusters of size less than MIN voxels.\n\
-                         A cluster is a set of face-sharing voxels of the same material.\n\
-                         Edge and corner sharing do not constitute a cluster."
-        )]
+        #[arg(long, short, value_name = "MIN")]
         min: usize,
 
         /// Number of voxels in the x-direction
-        #[arg(
-            long,
-            short = 'x',
-            value_name = "NEL",
-            long_help = "Specifies the number of voxels in the x-direction.\n\
-                         Required for spn input file conversion.\n\
-                         Example: --nelx 100"
-        )]
+        #[arg(long, short = 'x', value_name = "NEL")]
         nelx: Option<usize>,
 
         /// Number of voxels in the y-direction
-        #[arg(
-            long,
-            short = 'y',
-            value_name = "NEL",
-            long_help = "Specifies the number of voxels in the y-direction.\n\
-                         Required for spn input file conversion.\n\
-                         Example: --nely 200"
-        )]
+        #[arg(long, short = 'y', value_name = "NEL")]
         nely: Option<usize>,
 
         /// Number of voxels in the z-direction
-        #[arg(
-            long,
-            short = 'z',
-            value_name = "NEL",
-            long_help = "Specifies the number of voxels in the z-direction.\n\
-                         Required for spn input file conversion.\n\
-                         Example: --nelz 200"
-        )]
+        #[arg(long, short = 'z', value_name = "NEL")]
         nelz: Option<usize>,
 
         /// Pass to quiet the terminal output
@@ -115,10 +86,7 @@ enum Commands {
         b: f64,
     },
     /// Subtract two numbers
-    Sub {
-        a: f64,
-        b: f64,
-    },
+    Sub { a: f64, b: f64 },
 }
 
 #[derive(Subcommand)]
@@ -129,7 +97,6 @@ enum ConvertSubcommand {
     Segmentation(ConvertSegmentationArgs),
 }
 
-
 #[derive(Subcommand)]
 enum MeshSubcommand {
     /// Creates an all-hexahedral mesh from a segmentation
@@ -137,7 +104,6 @@ enum MeshSubcommand {
     /// Creates an all-triangular isosurface from a segmentation
     Tri(MeshTriArgs),
 }
-
 
 #[derive(clap::Args)]
 struct ConvertMeshArgs {
@@ -184,7 +150,7 @@ struct ConvertSegmentationArgs {
 #[derive(clap::Args)]
 struct MeshHexArgs {
     #[command(subcommand)]
-    smoothing: Option<SmoothingCommands>,
+    smoothing: Option<MeshSmoothCommands>,
 
     /// Segmentation input file (npy | spn)
     #[arg(long, short, value_name = "FILE")]
@@ -199,57 +165,30 @@ struct MeshHexArgs {
     defeature: Option<usize>,
 
     /// Number of voxels in the x-direction
-    #[arg(
-        long,
-        short = 'x',
-        value_name = "NEL",
-        long_help = "Specifies the number of voxels in the x-direction.\n\
-                     Required for spn input file conversion.\n\
-                     Example: --nelx 100"
-    )]
+    #[arg(long, short = 'x', value_name = "NEL")]
     nelx: Option<usize>,
 
     /// Number of voxels in the y-direction
-    #[arg(
-        long,
-        short = 'y',
-        value_name = "NEL",
-        long_help = "Specifies the number of voxels in the y-direction.\n\
-                     Required for spn input file conversion.\n\
-                     Example: --nely 200"
-    )]
+    #[arg(long, short = 'y', value_name = "NEL")]
     nely: Option<usize>,
 
     /// Number of voxels in the z-direction
-    #[arg(
-        long,
-        short = 'z',
-        value_name = "NEL",
-        long_help = "Specifies the number of voxels in the z-direction.\n\
-                     Required for spn input file conversion.\n\
-                     Example: --nelz 300"
-    )]
+    #[arg(long, short = 'z', value_name = "NEL")]
     nelz: Option<usize>,
 
     /// Voxel IDs to remove from the mesh
     #[arg(long, num_args = 1.., short, value_delimiter = ' ', value_name = "ID")]
     remove: Option<Vec<usize>>,
 
-    /// Scaling (> 0.0) in the x-direction - this comment is not longer used
-    #[arg(
-        default_value_t = 1.0,
-        long,
-        value_name = "SCALE",
-        long_help = "Scaling (> 0.0) in the x-direction\n\
-                     Scaling is applied before translation."
-    )]
+    /// Scaling (> 0.0) in the x-direction, applied before translation
+    #[arg(default_value_t = 1.0, long, value_name = "SCALE")]
     xscale: f64,
 
-    /// Scaling (> 0.0) in the y-direction
+    /// Scaling (> 0.0) in the y-direction, applied before translation
     #[arg(default_value_t = 1.0, long, value_name = "SCALE")]
     yscale: f64,
 
-    /// Scaling (> 0.0) in the z-direction
+    /// Scaling (> 0.0) in the z-direction, applied before translation
     #[arg(default_value_t = 1.0, long, value_name = "SCALE")]
     zscale: f64,
 
@@ -280,7 +219,7 @@ struct MeshHexArgs {
     )]
     ztranslate: f64,
 
-    /// Name of the quality metrics file
+    /// Quality metrics output file (csv | npy)
     #[arg(long, value_name = "FILE")]
     metrics: Option<String>,
 
@@ -296,13 +235,13 @@ struct MeshHexArgs {
 #[derive(clap::Args)]
 struct MeshTriArgs {
     #[command(subcommand)]
-    smoothing: Option<SmoothingCommands>,
+    smoothing: Option<MeshSmoothCommands>,
 
     /// Segmentation input file (npy | spn)
     #[arg(long, short, value_name = "FILE")]
     input: String,
 
-    /// Mesh output file (exo | inp | mesh | stl| vtk)
+    /// Mesh output file (exo | inp | mesh | stl | vtk)
     #[arg(long, short, value_name = "FILE")]
     output: String,
 
@@ -311,51 +250,30 @@ struct MeshTriArgs {
     defeature: Option<usize>,
 
     /// Number of voxels in the x-direction
-    #[arg(
-        long,
-        short = 'x',
-        value_name = "NEL",
-        long_help = "Specifies the number of voxels in the x-direction.\n\
-                     Required for spn input file conversion.\n\
-                     Example: --nelx 100"
-    )]
+    #[arg(long, short = 'x', value_name = "NEL")]
     nelx: Option<usize>,
 
     /// Number of voxels in the y-direction
-    #[arg(
-        long,
-        short = 'y',
-        value_name = "NEL",
-        long_help = "Specifies the number of voxels in the y-direction.\n\
-                     Required for spn input file conversion.\n\
-                     Example: --nely 200"
-    )]
+    #[arg(long, short = 'y', value_name = "NEL")]
     nely: Option<usize>,
 
     /// Number of voxels in the z-direction
-    #[arg(
-        long,
-        short = 'z',
-        value_name = "NEL",
-        long_help = "Specifies the number of voxels in the z-direction.\n\
-                     Required for spn input file conversion.\n\
-                     Example: --nelz 300"
-    )]
+    #[arg(long, short = 'z', value_name = "NEL")]
     nelz: Option<usize>,
 
     /// Voxel IDs to remove from the mesh
     #[arg(long, num_args = 1.., short, value_delimiter = ' ', value_name = "ID")]
     remove: Option<Vec<usize>>,
 
-    /// Scaling (> 0.0) in the x-direction
+    /// Scaling (> 0.0) in the x-direction, applied before translation
     #[arg(default_value_t = 1.0, long, value_name = "SCALE")]
     xscale: f64,
 
-    /// Scaling (> 0.0) in the y-direction
+    /// Scaling (> 0.0) in the y-direction, applied before translation
     #[arg(default_value_t = 1.0, long, value_name = "SCALE")]
     yscale: f64,
 
-    /// Scaling (> 0.0) in the z-direction
+    /// Scaling (> 0.0) in the z-direction, applied before translation
     #[arg(default_value_t = 1.0, long, value_name = "SCALE")]
     zscale: f64,
 
@@ -386,24 +304,26 @@ struct MeshTriArgs {
     )]
     ztranslate: f64,
 
-    /// Name of the quality metrics file
+    /// Quality metrics output file (csv | npy)
     #[arg(long, value_name = "FILE")]
     metrics: Option<String>,
 
     /// Pass to quiet the terminal output
     #[arg(action, long, short)]
     quiet: bool,
+
+    // There is no dualization for triangles, only hexahedra.
 }
 
 #[derive(Subcommand, Debug)]
-enum SmoothingCommands {
+enum MeshSmoothCommands {
     /// Applies smoothing to the mesh before output
     Smooth {
         /// Pass to enable hierarchical control
         #[arg(action, long, short = 'c')]
         hierarchical: bool,
 
-        /// Number of smoothing iterations [default: 20]
+        /// Number of smoothing iterations
         #[arg(default_value_t = 20, long, short = 'n', value_name = "NUM")]
         iterations: usize,
 
@@ -411,20 +331,15 @@ enum SmoothingCommands {
         #[arg(long, short, value_name = "NAME")]
         method: Option<String>,
 
-        /// Pass-band frequency (for Taubin only) [default: 0.1]
+        /// Pass-band frequency (for Taubin only)
         #[arg(default_value_t = 0.1, long, short = 'k', value_name = "FREQ")]
         pass_band: f64,
 
-        /// Scaling parameter for all smoothing methods [default: 0.6307]
+        /// Scaling parameter for all smoothing methods
         #[arg(default_value_t = 0.6307, long, short, value_name = "SCALE")]
         scale: f64,
-
-        /// Quality metrics output file (csv | npy)
-        #[arg(long, value_name = "FILE")]
-        metrics: Option<String>,
     },
 }
-
 
 fn main() {
     let time = Instant::now();
@@ -438,20 +353,73 @@ fn main() {
             }
             ConvertSubcommand::Segmentation(args) => {
                 is_quiet = args.quiet;
-                convert_segmentation(args.input, args.output, args.nelx, args.nely, args.nelz, args.quiet);
+                convert_segmentation(
+                    args.input,
+                    args.output,
+                    args.nelx,
+                    args.nely,
+                    args.nelz,
+                    args.quiet,
+                );
             }
+        },
+        Some(Commands::Defeature {
+            input,
+            output,
+            min,
+            nelx,
+            nely,
+            nelz,
+            quiet,
+        }) => {
+            is_quiet = quiet;
+            defeature(input, output, min, nelx, nely, nelz, quiet)
         }
-        Some(Commands::Defeature { input, output, min, nelx, nely, nelz, quiet }) => { is_quiet = quiet; defeature(input, output, min, nelx, nely, nelz, quiet)}
         Some(Commands::Mesh { subcommand }) => match subcommand {
             MeshSubcommand::Hex(args) => {
                 is_quiet = args.quiet;
-                mesh_hex(args.smoothing, args.input, args.output, args.defeature, args.nelx, args.nely, args.nelz, args.remove, args.xscale, args.yscale, args.zscale, args.xtranslate, args.ytranslate, args.ztranslate, args.metrics, args.quiet, args.dual);
+                mesh_hex(
+                    args.smoothing,
+                    args.input,
+                    args.output,
+                    args.defeature,
+                    args.nelx,
+                    args.nely,
+                    args.nelz,
+                    args.remove,
+                    args.xscale,
+                    args.yscale,
+                    args.zscale,
+                    args.xtranslate,
+                    args.ytranslate,
+                    args.ztranslate,
+                    args.metrics,
+                    args.quiet,
+                    args.dual,
+                );
             }
             MeshSubcommand::Tri(args) => {
                 is_quiet = args.quiet;
-                mesh_tri(args.smoothing, args.input, args.output, args.defeature, args.nelx, args.nely, args.nelz, args.remove, args.xscale, args.yscale, args.zscale, args.xtranslate, args.ytranslate, args.ztranslate, args.metrics, args.quiet);
+                mesh_tri(
+                    args.smoothing,
+                    args.input,
+                    args.output,
+                    args.defeature,
+                    args.nelx,
+                    args.nely,
+                    args.nelz,
+                    args.remove,
+                    args.xscale,
+                    args.yscale,
+                    args.zscale,
+                    args.xtranslate,
+                    args.ytranslate,
+                    args.ztranslate,
+                    args.metrics,
+                    args.quiet,
+                );
             }
-        }
+        },
         Some(Commands::Greet { name }) => {
             println!("Hello {}", name);
         }
@@ -470,11 +438,7 @@ fn main() {
     }
 }
 
-fn convert_mesh(
-    input: String,
-    output: String,
-    quiet: bool,
-) {
+fn convert_mesh(input: String, output: String, quiet: bool) {
     println!("function: convert");
     println!("  input: {input}");
     println!("  output: {output}");
@@ -515,12 +479,11 @@ fn defeature(
     println!("  nely: {:?}", nely);
     println!("  nelz: {:?}", nelz);
     println!("  quiet: {quiet}")
-
 }
 
 #[allow(clippy::too_many_arguments)]
 fn mesh_hex(
-    smoothing: Option<SmoothingCommands>,
+    smoothing: Option<MeshSmoothCommands>,
     input: String,
     output: String,
     defeature: Option<usize>,
@@ -564,7 +527,7 @@ fn mesh_hex(
 
 #[allow(clippy::too_many_arguments)]
 fn mesh_tri(
-    smoothing: Option<SmoothingCommands>,
+    smoothing: Option<MeshSmoothCommands>,
     input: String,
     output: String,
     defeature: Option<usize>,
