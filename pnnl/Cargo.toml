@@ -1,0 +1,10 @@
+[package]
+name = "pnnl"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+lamellar = { version = "0.7.1", features = ["runtime-warnings-panic"] }
+# lamellar = { version = "0.7.1" }
+rand = "0.9.0"
+rayon = "1.10.0"
