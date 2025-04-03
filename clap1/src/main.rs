@@ -73,20 +73,6 @@ enum Commands {
         #[command(subcommand)]
         subcommand: MeshSubcommand,
     },
-    /// Prints a greeting message
-    Greet {
-        /// Name of the person to greet
-        name: String,
-    },
-    /// Add two numbers
-    Add {
-        /// The first number
-        a: f64,
-        /// The second number
-        b: f64,
-    },
-    /// Subtract two numbers
-    Sub { a: f64, b: f64 },
 }
 
 #[derive(Subcommand)]
@@ -420,17 +406,6 @@ fn main() {
                 );
             }
         },
-        Some(Commands::Greet { name }) => {
-            println!("Hello {}", name);
-        }
-        Some(Commands::Add { a, b }) => {
-            let result = a + b;
-            println!("Result: {}", result);
-        }
-        Some(Commands::Sub { a, b }) => {
-            let result = a - b;
-            println!("Result: {}", result);
-        }
         None => (),
     }
     if !is_quiet {
