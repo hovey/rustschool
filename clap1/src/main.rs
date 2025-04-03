@@ -164,37 +164,16 @@ struct ConvertSegmentationArgs {
     #[arg(long, short, value_name = "FILE")]
     output: String,
 
-    /// Number of voxels in the x-direction - never gets used
-    #[arg(
-        long,
-        short = 'x',
-        value_name = "NEL",
-        long_help = "Specifies the number of voxels in the x-direction.\n\
-                     Required for spn input file conversion.\n\
-                     Example: --nelx 100"
-    )]
+    /// Number of voxels in the x-direction
+    #[arg(long, short = 'x', value_name = "NEL")]
     nelx: Option<usize>,
 
     /// Number of voxels in the y-direction
-    #[arg(
-        long,
-        short = 'y',
-        value_name = "NEL",
-        long_help = "Specifies the number of voxels in the y-direction.\n\
-                     Required for spn input file conversion.\n\
-                     Example: --nely 200"
-    )]
+    #[arg(long, short = 'y', value_name = "NEL")]
     nely: Option<usize>,
 
     /// Number of voxels in the z-direction
-    #[arg(
-        long,
-        short = 'z',
-        value_name = "NEL",
-        long_help = "Specifies the number of voxels in the z-direction.\n\
-                     Required for spn input file conversion.\n\
-                     Example: --nelz 300"
-    )]
+    #[arg(long, short = 'z', value_name = "NEL")]
     nelz: Option<usize>,
 
     /// Pass to quiet the terminal output
