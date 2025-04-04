@@ -73,6 +73,20 @@ enum Commands {
         #[command(subcommand)]
         subcommand: MeshSubcommand,
     },
+    /// Quality metrics for an existing finite element mesh
+    Metrics {
+        /// Mesh input file (inp | stl)
+        #[arg(long, short, value_name = "FILE")]
+        input: String,
+
+        /// Quality metrics output file (csv | npy)
+        #[arg(long, short, value_name = "FILE")]
+        output: String,
+
+        /// Pass to quiet the terminal output
+        #[arg(action, long, short)]
+        quiet: bool,
+    }
 }
 
 #[derive(Subcommand)]
@@ -406,6 +420,14 @@ fn main() {
                 );
             }
         },
+        Some(Commands::Metrics {
+            input,
+            output,
+            quiet,
+        }) => {
+            is_quiet = quiet;
+            metrics(input, output, quiet)
+        }
         None => (),
     }
     if !is_quiet {
@@ -542,4 +564,11 @@ fn mesh_tri(
     // println!("  dual: {dual}");
     println!("  quiet: {quiet}");
     // println!("  surface: {surface}");
+}
+
+fn metrics(input: String, output: String, quiet: bool) {
+    println!("function: metrics");
+    println!("  input: {input}");
+    println!("  output: {output}");
+    println!("  quiet: {quiet}");
 }
