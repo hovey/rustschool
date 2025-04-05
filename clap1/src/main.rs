@@ -86,6 +86,44 @@ enum Commands {
         /// Pass to quiet the terminal output
         #[arg(action, long, short)]
         quiet: bool,
+    },
+    /// Applies smoothing to an existing mesh
+    Smooth {
+        /// Pass to enable hierarchical control
+        #[arg(action, long, short = 'c')]
+        hierarchical: bool,
+
+        /// Mesh input file (inp | stl)
+        #[arg(long, short, value_name = "FILE")]
+        input: String,
+
+        /// Smoothed mesh output file (exo | inp | mesh | stl | vtk)
+        #[arg(long, short, value_name = "FILE")]
+        output: String,
+
+        /// Number of smoothing iterations
+        #[arg(default_value_t = 20, long, short = 'n', value_name = "NUM")]
+        iterations: usize,
+
+        /// Smoothing method (Laplace | Taubin) [default: Taubin]
+        #[arg(long, short, value_name = "NAME")]
+        method: Option<String>,
+
+        /// Pass-band frequency (for Taubin only)
+        #[arg(default_value_t = 0.1, long, short = 'k', value_name = "FREQ")]
+        pass_band: f64,
+
+        /// Scaling parameter for all smoothing methods
+        #[arg(default_value_t = 0.6307, long, short, value_name = "SCALE")]
+        scale: f64,
+
+        /// Quality metrics output file (csv | npy)
+        #[arg(long, value_name = "FILE")]
+        metrics: Option<String>,
+
+        /// Pass to quiet the terminal output
+        #[arg(action, long, short)]
+        quiet: bool,
     }
 }
 
@@ -427,6 +465,20 @@ fn main() {
         }) => {
             is_quiet = quiet;
             metrics(input, output, quiet)
+        },
+        Some(Commands::Smooth { hierarchical, input, output, iterations, method, pass_band, scale, metrics, quiet }) => {
+            is_quiet = quiet;
+            smooth(
+                hierarchical,
+                input,
+                output,
+                iterations,
+                method,
+                pass_band,
+                scale,
+                metrics,
+                quiet,
+            )
         }
         None => (),
     }
@@ -570,5 +622,29 @@ fn metrics(input: String, output: String, quiet: bool) {
     println!("function: metrics");
     println!("  input: {input}");
     println!("  output: {output}");
+    println!("  quiet: {quiet}");
+}
+
+#[allow(clippy::too_many_arguments)]
+fn smooth(
+    hierarchical: bool,
+    input: String,
+    output: String,
+    iterations: usize,
+    method: Option<String>,
+    pass_band: f64,
+    scale: f64,
+    metrics: Option<String>,
+    quiet: bool,
+) {
+    println!("function: smooth");
+    println!("  hierarchical: {hierarchical}");
+    println!("  input: {input}");
+    println!("  output: {output}");
+    println!("  iterations: {iterations}");
+    println!("  method: {:?}", method);
+    println!("  pass_band: {pass_band}");
+    println!("  scale: {scale}");
+    println!("  metrics: {:?}", metrics);
     println!("  quiet: {quiet}");
 }
