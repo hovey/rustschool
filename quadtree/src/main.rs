@@ -7,6 +7,7 @@ struct Point {
 }
 
 // Boundary of a quadtree cell
+#[derive(Debug)]
 struct Rectangle {
     origin: Point,
     width: f32,
@@ -19,6 +20,7 @@ struct Rectangle {
 // a leaf with points, or an internal node with children.  To avoid a recursive type
 // with infinite size, the children are usually stored in a Box, which allocates them
 // on the heap.
+#[derive(Debug)]
 enum Cell{
     // A leaf node that stores a list of points
     Leaf { points: Vec<Point> },
@@ -36,6 +38,7 @@ enum Cell{
 const MAX_LEVELS: usize = 2;
 
 // the main Quadtree struct
+#[derive(Debug)]
 struct Quadtree {
     boundary: Rectangle,
     level: usize,
@@ -52,7 +55,6 @@ impl Rectangle {
         point.y < self.origin.y + self.height
     }
 }
-
 
 impl Quadtree {
     // Public constructor for the root of the quadtree.
@@ -154,4 +156,29 @@ impl Quadtree {
 
 fn main() {
     println!("Hello, world!");
+
+    let boundary = Rectangle {
+        origin: Point { x: 0.0, y: 0.0 },
+        width: 100.0,
+        height: 100.0,
+    };
+    
+    let mut quadtree = Quadtree::new(boundary);
+
+    println!("Inserting points...");
+    // sw quadrant
+    quadtree.insert(Point { x: 10.0, y: 10.0});
+    quadtree.insert(Point { x: 12.0, y: 15.0});
+    // nw quadrant
+    quadtree.insert(Point { x: 80.0, y: 80.0});
+    quadtree.insert(Point { x: 90.0, y: 95.0});
+    // nw quadrant
+    quadtree.insert(Point { x: 40.0, y: 60.0 });
+    // se quadrant
+    quadtree.insert(Point { x: 60.0, y: 40.0 });
+
+    println!("\nFinal Quadtree Structure:");
+    println!("{:#?}", quadtree);
+
+
 }
