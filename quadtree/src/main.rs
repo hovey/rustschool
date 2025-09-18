@@ -80,14 +80,14 @@ impl Quadtree {
                     self.subdivide();
                 }
             }
-            Cell::Children { ne, nw, sw, se } => {
+            Cell::Children { nw, ne, sw, se } => {
                 // Insert into the correct child, trying each one.
-                if ne.insert(point.clone()) {
-                    // Point was inserted into ne
-                 }
-                else if nw.insert(point.clone()) {
+                if nw.insert(point.clone()) {
                     // Point was inserted into nw
                 }
+                else if ne.insert(point.clone()) {
+                    // Point was inserted into ne
+                 }
                 else if sw.insert(point.clone()) {
                     // Point was inserted into sw
                 }
@@ -114,13 +114,13 @@ impl Quadtree {
         let y = self.boundary.origin.y;
         let child_level = self.level + 1;
 
-        let ne_boundary = Rectangle {
-            origin: Point { x: x + half_width, y: y + half_height },
+        let nw_boundary = Rectangle {
+            origin: Point { x, y: y + half_height },
             width: half_width,
             height: half_height,
         };
-        let nw_boundary = Rectangle {
-            origin: Point { x, y: y + half_height },
+        let ne_boundary = Rectangle {
+            origin: Point { x: x + half_width, y: y + half_height },
             width: half_width,
             height: half_height,
         };
@@ -135,13 +135,13 @@ impl Quadtree {
             height: half_height,
         };
 
-        let ne = Box::new(Quadtree::new_with_level(ne_boundary, child_level));
         let nw = Box::new(Quadtree::new_with_level(nw_boundary, child_level));
+        let ne = Box::new(Quadtree::new_with_level(ne_boundary, child_level));
         let sw = Box::new(Quadtree::new_with_level(sw_boundary, child_level));
         let se = Box::new(Quadtree::new_with_level(se_boundary, child_level));
     
         // Replace the leaf with the new children
-        self.cell = Cell::Children { ne, nw, sw, se };
+        self.cell = Cell::Children { nw, ne, sw, se };
     
         // Re-insert all the points that were in the old leaf.
         for p in points { 
