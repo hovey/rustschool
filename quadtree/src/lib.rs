@@ -179,22 +179,16 @@ impl Quadtree {
             self.insert(p);
         }
     }
-    pub fn to_json(&self) -> Result<String, serde_json::Error> {
-        serde_json::to_string_pretty(self)
+    pub fn to_yaml(&self) -> Result<String, serde_yaml::Error> {
+        serde_yaml::to_string(self)
     }
     pub fn visualize(&self) -> Result<(), String> {
-        let json_data = self
-            .to_json()
-            .map_err(|e| format!("Failed to serialize quadtree to JSON: {}", e))?;
+        let yaml_data = self
+            .to_yaml()
+            .map_err(|e| format!("Failed to serialize quadtree to YAML: {}", e))?;
 
-        // // Create a temporary file to store the JSON data
-        // let temp_dir = env::temp_dir();
-        // println!("Temporary directory: {:?}", temp_dir);
+        println!("Generated YAML data:\n{}", yaml_data);
 
-        // let temp_file_path = temp_dir.join("quadtree_data.json");
-        // println!("Temporary file path: {:?}", temp_file_path);
-
-        // Create a scratch temporary folder from the home path
         let home_dir =
             dirs::home_dir().ok_or_else(|| "Could not find the home directory".to_string())?;
         let custom_temp_dir = home_dir.join("scratch").join("quadtree");
@@ -209,14 +203,14 @@ impl Quadtree {
         println!("Custom temporary directory: {:?}", custom_temp_dir);
 
         // Create a temporary JSON output file
-        let temp_file_path = custom_temp_dir.join("quadtree_data.json");
-        println!("Temporary JSON file path: {:?}", temp_file_path);
+        let temp_file_path = custom_temp_dir.join("quadtree_data.yaml");
+        println!("Temporary YAML file path: {:?}", temp_file_path);
 
         let mut file = File::create(&temp_file_path)
             .map_err(|e| format!("Failed to create temporary file: {}", e))?;
 
-        file.write_all(json_data.as_bytes())
-            .map_err(|e| format!("Failed to write JSON to temporary file: {}", e))?;
+        file.write_all(yaml_data.as_bytes())
+            .map_err(|e| format!("Failed to write YAML to temporary file: {}", e))?;
 
         // Get the current working directory to find the PYthon script
         let current_dir =
