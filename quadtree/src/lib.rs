@@ -1,13 +1,19 @@
+use std::process::Command;
+use std::fs::File;
+use std::io::Write;
+use std::env;  // Needed for env::current_dir()
+use serde::Serialize;
+
 // The general point definition in R^2, which will be used for the node origin
 // as well as for points contained in the quadtree.
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Serialize)]
 pub struct Point {
     pub x: f32,
     pub y: f32,
 }
 
 // Boundary of a quadtree node
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Serialize)]
 pub struct Rectangle {
     pub origin: Point,
     pub width: f32,
@@ -20,7 +26,7 @@ pub struct Rectangle {
 // a leaf node with points, or an internal node with children.  To avoid a recursive
 // type with infinite size, the children are usually stored in a Box, which allocates
 // them on the heap.
-#[derive(Debug)]
+#[derive(Debug, Serialize)]
 pub enum Node{
     // A leaf node that stores a list of points
     Leaf { points: Vec<Point> },
@@ -34,7 +40,7 @@ pub enum Node{
 }
 
 // the main Quadtree struct
-#[derive(Debug)]
+#[derive(Debug, Serialize)]
 pub struct Quadtree {
     pub boundary: Rectangle,
     pub level: usize,
@@ -146,6 +152,42 @@ impl Quadtree {
         // Re-insert all the points that were in the old leaf node.
         for p in points { 
             self.insert(p);
+        }
+    }
+    pub fn to_json(&self) -> Result<String, serde_json::Error> {
+        serde_json::to_string_pretty(self)
+    }
+    pub fn visualize(&self) -> Result<(), String> {
+        let json_data = self.to_json().map_err(|e| format!("Failed to serialize quadtree to JSON: {}", e))?;
+
+        // Create a temporary file to store the JSON data
+        let temp_dir = env::temp_dir();
+        let temp_file_path = temp_dir.join("quadtree_data.json");
+        let mut file = File::create(&temp_file_path).map_err(|e| format!("Failed to create temporary file: {}", e))?;
+        file.write_all(json_data.as_bytes()).map_err(|e| format!("Failed to write JSON to temporary file: {}", e))?;
+    
+        // Get the current working directory to find the PYthon script
+        let current_dir = env::current_dir().map_err(|e| format!("Failed to get current directory: {}", e))?;
+        let script_path = current_dir.join("visualize_quadtree.py");
+
+        // Execute the Python script
+        let output = Command::new("python3")  // Use "python" or "python3" depending on your system
+            .arg(script_path)
+            .arg(temp_file_path)  // Pass the path to the JSON file as an argument
+            .output()
+            .map_err(|e| format!("Failed to execute Python script: {}", e))?;
+    
+        if output.status.success() {
+            println!("Python script executed successfully.");
+            println!("Python stdout:\n{}", String::from_utf8_lossy(&output.stdout));
+            Ok(())
+        } else {
+            Err(format!(
+                "Python script failed with exit code {:?}\nStdout: {}\nStderr: {}",
+                output.status.code(),
+                String::from_utf8_lossy(&output.stdout),
+                String::from_utf8_lossy(&output.stderr)
+            ))
         }
     }
 }

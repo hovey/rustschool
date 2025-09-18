@@ -27,5 +27,11 @@ fn main() {
     println!("\nFinal Quadtree Structure:");
     println!("{:#?}", quadtree);
 
+    // Call the visualization method
+    println!("\nVisualizaing quadtree...");
+    match quadtree.visualize() {
+        Ok(_) => println!("Visualization command sent."),
+        Err(e) => eprintln!("Visualization failed: {}", e),
+    }
 
 }
