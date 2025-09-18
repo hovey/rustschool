@@ -63,8 +63,6 @@ def draw_quadtree(ax, node_data, level=0):
     )
     ax.add_patch(rect)
 
-    breakpoint()
-
     # Draw points if it's a Leaf node
     if "Leaf" in node_data["node"]:
         points = node_data["node"]["Leaf"]["points"]
