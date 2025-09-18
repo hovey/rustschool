@@ -10,17 +10,16 @@ Example:
 import json
 import sys
 
+import matplotlib.colors as mcolors
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 import yaml
 
 
-# Register constructors for custom tags used by serde for enums.
-# This tells PyYAML to treat !Leaf and !Children as regular mappings (diectionaries)
 def construct_quadtree_leaf(loader, node):
     """
     Register constructors for custom tags used by serde for enums.
-    This tells PyYAML to treat !Leaf and !Children as regular mappings (diectionaries)
+    This tells PyYAML to treat !Leaf as regular mappings (diectionaries)
     """
     result = loader.construct_mapping(node)
     return {"Leaf": result}
@@ -29,7 +28,7 @@ def construct_quadtree_leaf(loader, node):
 def construct_quadtree_children(loader, node):
     """
     Register constructors for custom tags used by serde for enums.
-    This tells PyYAML to treat !Leaf and !Children as regular mappings (diectionaries)
+    This tells PyYAML to treat !Children as regular mappings (diectionaries)
     """
     result = loader.construct_mapping(node)
     return {"Children": result}
@@ -39,14 +38,15 @@ yaml.FullLoader.add_constructor("!Leaf", construct_quadtree_leaf)
 yaml.FullLoader.add_constructor("!Children", construct_quadtree_children)
 
 
-def draw_quadtree(ax, node_data, level=0):
+def draw_quadtree(ax, node_data, colors, level=0):
     """Draws the quadtree with matplotlib."""
-    # Define colors for each level
-    colors = ["tab:blue", "tab:orange", "tab:green", "tab:red"]
+    # Use the modulo operator to cycle through the colors list.
+    # This prevents an IndexError if the quadtree level is larger than the number of colors.
+    current_color = colors[level % len(colors)]
 
     # Define line style for the first level
     linestyle = "dashed" if level == 0 else "solid"
-    linewidth = 5 if level == 0 else 2
+    linewidth = 4 if level == 0 else 2
 
     print(f"Drawing level: {level}")
 
@@ -57,9 +57,10 @@ def draw_quadtree(ax, node_data, level=0):
         boundary["width"],
         boundary["height"],
         linewidth=linewidth,
-        edgecolor=colors[level],
+        edgecolor=current_color,
         linestyle=linestyle,
         facecolor="none",
+        zorder=level,
     )
     ax.add_patch(rect)
 
@@ -69,14 +70,14 @@ def draw_quadtree(ax, node_data, level=0):
         if points:
             x_coords = [p["x"] for p in points]
             y_coords = [p["y"] for p in points]
-            ax.scatter(x_coords, y_coords, color=colors[level], s=10)
+            ax.scatter(x_coords, y_coords, color=current_color, s=10)
     # Recursively draw children if it's a Children node
     elif "Children" in node_data["node"]:
         children = node_data["node"]["Children"]
-        draw_quadtree(ax, children["nw"], level + 1)
-        draw_quadtree(ax, children["ne"], level + 1)
-        draw_quadtree(ax, children["sw"], level + 1)
-        draw_quadtree(ax, children["se"], level + 1)
+        draw_quadtree(ax, children["nw"], colors, level + 1)
+        draw_quadtree(ax, children["ne"], colors, level + 1)
+        draw_quadtree(ax, children["sw"], colors, level + 1)
+        draw_quadtree(ax, children["se"], colors, level + 1)
 
 
 def main():
@@ -108,6 +109,10 @@ def main():
     fig, ax = plt.subplots(figsize=(6.0, 6.0), dpi=100)
     ax.set_aspect("equal", adjustable="box")
 
+    # Define colors for each level
+    # colors = ["tab:blue", "tab:orange", "tab:green", "tab:red"]
+    colors = list(mcolors.TABLEAU_COLORS.keys())
+
     # Set plot limits based on the root boundary
     root_boundary = quadtree_data["boundary"]
     ax.set_xlim(
@@ -119,7 +124,7 @@ def main():
         root_boundary["origin"]["y"] + root_boundary["height"],
     )
 
-    draw_quadtree(ax, quadtree_data)
+    draw_quadtree(ax, quadtree_data, colors)
 
     plt.title("Quadtree Visualization")
     plt.xlabel("x")

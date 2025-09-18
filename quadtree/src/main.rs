@@ -5,16 +5,16 @@ fn main() {
     println!("Hello quadtree!");
 
     let boundary = Rectangle {
-        origin: Point { x: 0.0, y: 0.0 },
-        width: 100.0,
-        height: 100.0,
+        origin: Point { x: 1.0, y: -1.0 },
+        width: 2.0,
+        height: 2.0,
     };
 
-    let mut quadtree = Quadtree::new(boundary, 0);
+    let mut quadtree = Quadtree::new(boundary, 5);
 
     println!("Inserting points...");
     // sw quadrant
-    quadtree.insert(Point { x: 10.0, y: 10.0 });
+    quadtree.insert(Point { x: 2.6, y: 0.6 });
     // quadtree.insert(Point { x: 12.0, y: 15.0 });
     // // nw quadrant
     // quadtree.insert(Point { x: 80.0, y: 80.0 });
