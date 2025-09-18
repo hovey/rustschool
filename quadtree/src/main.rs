@@ -152,6 +152,49 @@ impl Quadtree {
     }
 }
 
+#[cfg(test)]
+mod tests {
+    use super::*; // Import everything from the outer scope
+
+    #[test]
+    fn test_rectangle_contains() {
+        let rect = Rectangle {
+            origin: Point { x: 0.0, y: 0.0 },
+            width: 10.0,
+            height: 10.0,
+        };
+
+        assert!(rect.contains(&Point { x: 5.0, y: 5.0 }));  // inside
+        assert!(rect.contains(&Point { x: 0.0, y: 5.0 }));  // on left edge (inclusive)
+        assert!(!rect.contains(&Point { x: 10.0, y: 5.0 }));  // on right edge (exclusive)
+        assert!(rect.contains(&Point { x: 5.0, y: 0.0 }));  // on bottom edge (inclusive)
+        assert!(!rect.contains(&Point { x: 5.0, y: 10.0 }));  // on top edge (exclusive)
+        assert!(!rect.contains(&Point { x: -1.0, y: 5.0}));  // outside left
+        assert!(!rect.contains(&Point { x: 11.0, y: 5.0}));  // outside left
+        assert!(!rect.contains(&Point { x: 5.0, y: -1.0}));  // outside bottom
+        assert!(!rect.contains(&Point { x: 5.0, y: 11.0}));  // outside top
+    }
+
+    #[test]
+    fn test_quadtree_insert_single_point() {
+        let boundary = Rectangle {
+            origin: Point { x: 0.0, y: 0.0 },
+            width: 100.0,
+            height: 100.0,
+        };
+        let mut quadtree = Quadtree::new(boundary);
+        let point = Point { x: 50.0, y: 60.0 };
+
+        assert!(quadtree.insert(point.clone()));
+        if let Cell::Leaf { points } = quadtree.cell {
+            assert_eq!(points.len(), 1);
+            assert_eq!(points[0], point);
+        } else {
+            panic!("Quadtree should still be a Leaf after one insertion");
+        }
+    }
+}
+
 
 
 fn main() {
