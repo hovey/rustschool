@@ -1,4 +1,5 @@
-# visualize_quadtree.py
+"""This module, visualize_quadtree.py, draw the quadtree visualization with matplotlib."""
+
 import sys
 import json
 import matplotlib.pyplot as plt
@@ -6,6 +7,7 @@ import matplotlib.patches as patches
 
 
 def draw_quadtree(ax, node_data, level=0):
+    """Draws the quadtree with matplotlib."""
     # Draw the boundary of the current node
     boundary = node_data["boundary"]
     rect = patches.Rectangle(
@@ -35,14 +37,16 @@ def draw_quadtree(ax, node_data, level=0):
 
 
 def main():
+    """The main entry point for the scrirpt."""
     if len(sys.argv) < 2:
         print("Usage: python3 visualize_quadtree.py <path_to_json_file>")
         sys.exit(1)
 
     json_file_path = sys.argv[1]
+    print(f"Processing file: {json_file_path}")
 
     try:
-        with open(json_file_path, "r") as f:
+        with open(json_file_path, "r", encoding="utf8") as f:
             quadtree_data = json.load(f)
     except FileNotFoundError:
         print(f"Error: JSON file not found at {json_file_path}")

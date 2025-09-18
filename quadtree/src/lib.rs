@@ -1,6 +1,7 @@
+use dirs;
 use serde::Serialize;
 use std::env; // Needed for env::current_dir()
-use std::fs::File;
+use std::fs::{self, File};
 use std::io::Write;
 use std::process::Command;
 
@@ -186,17 +187,41 @@ impl Quadtree {
             .to_json()
             .map_err(|e| format!("Failed to serialize quadtree to JSON: {}", e))?;
 
-        // Create a temporary file to store the JSON data
-        let temp_dir = env::temp_dir();
-        let temp_file_path = temp_dir.join("quadtree_data.json");
+        // // Create a temporary file to store the JSON data
+        // let temp_dir = env::temp_dir();
+        // println!("Temporary directory: {:?}", temp_dir);
+
+        // let temp_file_path = temp_dir.join("quadtree_data.json");
+        // println!("Temporary file path: {:?}", temp_file_path);
+
+        // Create a scratch temporary folder from the home path
+        let home_dir =
+            dirs::home_dir().ok_or_else(|| "Could not find the home directory".to_string())?;
+        let custom_temp_dir = home_dir.join("scratch").join("quadtree");
+
+        // Ensure the custom directory exists
+        fs::create_dir_all(&custom_temp_dir).map_err(|e| {
+            format!(
+                "Failed to create custom directory {:?}: {}",
+                custom_temp_dir, e
+            )
+        })?;
+        println!("Custom temporary directory: {:?}", custom_temp_dir);
+
+        // Create a temporary JSON output file
+        let temp_file_path = custom_temp_dir.join("quadtree_data.json");
+        println!("Temporary JSON file path: {:?}", temp_file_path);
+
         let mut file = File::create(&temp_file_path)
             .map_err(|e| format!("Failed to create temporary file: {}", e))?;
+
         file.write_all(json_data.as_bytes())
             .map_err(|e| format!("Failed to write JSON to temporary file: {}", e))?;
 
         // Get the current working directory to find the PYthon script
         let current_dir =
             env::current_dir().map_err(|e| format!("Failed to get current directory: {}", e))?;
+
         let script_path = current_dir.join("visualize_quadtree.py");
 
         // Execute the Python script

@@ -2,7 +2,7 @@
 use quadtree::*; // Bring all public items from quadtree into scope
 
 fn main() {
-    println!("Hello, world!");
+    println!("Hello quadtree!");
 
     let boundary = Rectangle {
         origin: Point { x: 0.0, y: 0.0 },
@@ -24,11 +24,11 @@ fn main() {
     // se quadrant
     quadtree.insert(Point { x: 60.0, y: 40.0 });
 
-    println!("\nFinal Quadtree Structure:");
-    println!("{:#?}", quadtree);
+    // println!("\nFinal Quadtree Structure:");
+    // println!("{:#?}", quadtree);
 
     // Call the visualization method
-    println!("\nVisualizaing quadtree...");
+    println!("\nVisualizing quadtree...");
     match quadtree.visualize() {
         Ok(_) => println!("Visualization command sent."),
         Err(e) => eprintln!("Visualization failed: {}", e),
