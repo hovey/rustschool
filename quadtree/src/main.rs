@@ -1,4 +1,4 @@
-// The general point definition in R^2, which will be used for the cell origin
+// The general point definition in R^2, which will be used for the node origin
 // as well as for points contained in the quadtree.
 #[derive(Debug, Clone, PartialEq)]
 struct Point {
@@ -6,7 +6,7 @@ struct Point {
     y: f32,
 }
 
-// Boundary of a quadtree cell
+// Boundary of a quadtree node
 #[derive(Debug)]
 struct Rectangle {
     origin: Point,
@@ -14,14 +14,14 @@ struct Rectangle {
     height: f32,
 }
 
-// Enum to represent the state of a cell (also known as as a node).
-// To implement the recursive ne, nw, sw, se children, a common and idiomatic
+// Enum to represent the state of a node.
+// To implement the recursive nw, ne, sw, se children, a common and idiomatic
 // Rust pattern is to use an enum to represent the two states of a quadtree node:
-// a leaf with points, or an internal node with children.  To avoid a recursive type
-// with infinite size, the children are usually stored in a Box, which allocates them
-// on the heap.
+// a leaf node with points, or an internal node with children.  To avoid a recursive
+// type with infinite size, the children are usually stored in a Box, which allocates
+// them on the heap.
 #[derive(Debug)]
-enum Cell{
+enum Node{
     // A leaf node that stores a list of points
     Leaf { points: Vec<Point> },
     // An internal node that has four children
@@ -42,7 +42,7 @@ const MAX_LEVELS: usize = 2;
 struct Quadtree {
     boundary: Rectangle,
     level: usize,
-    cell: Cell,
+    node: Node,
 }
 
 impl Rectangle {
@@ -66,7 +66,7 @@ impl Quadtree {
         Self {
             boundary,
             level,
-            cell: Cell::Leaf { points: Vec::new() },
+            node: Node::Leaf { points: Vec::new() },
         }
     }
     // Insert a point into the quadtree
@@ -75,14 +75,14 @@ impl Quadtree {
             return false;
         }
 
-        match &mut self.cell {
-            Cell::Leaf { points} => {
+        match &mut self.node { // Renamed from 'self.cell' to 'self.node'
+            Node::Leaf { points} => {
                 points.push(point);
                 if self.level < MAX_LEVELS {
                     self.subdivide();
                 }
             }
-            Cell::Children { nw, ne, sw, se } => {
+            Node::Children { nw, ne, sw, se } => {
                 // Insert into the correct child, trying each one.
                 if nw.insert(point.clone()) {
                     // Point was inserted into nw
@@ -100,13 +100,13 @@ impl Quadtree {
         }
         true
     }
-    // Subdivide a leaf cell into four children cells
+    // Subdivide a leaf node into four children nodes
     fn subdivide(&mut self) {
-        // Take the points from the current leaf, leaving an empty vector in its place.
-        let points = if let Cell::Leaf { points } = &mut self.cell {
+        // Take the points from the current leaf node, leaving an empty vector in its place.
+        let points = if let Node::Leaf { points } = &mut self.node {
             std::mem::take(points)
         } else {
-            // Should not happen if we only call subdivide on a leaf
+            // Should not happen if we only call subdivide on a leaf node
             return;
         };
 
@@ -142,10 +142,10 @@ impl Quadtree {
         let sw = Box::new(Quadtree::new_with_level(sw_boundary, child_level));
         let se = Box::new(Quadtree::new_with_level(se_boundary, child_level));
     
-        // Replace the leaf with the new children
-        self.cell = Cell::Children { nw, ne, sw, se };
+        // Replace the leaf node with the new children nodes
+        self.node = Node::Children { nw, ne, sw, se }; // Renamed from 'self.cell' to 'self.node' and 'Cell::Children' to 'Node::Children'
     
-        // Re-insert all the points that were in the old leaf.
+        // Re-insert all the points that were in the old leaf node.
         for p in points { 
             self.insert(p);
         }
@@ -186,11 +186,11 @@ mod tests {
         let point = Point { x: 50.0, y: 60.0 };
 
         assert!(quadtree.insert(point.clone()));
-        if let Cell::Leaf { points } = quadtree.cell {
+        if let Node::Leaf { points } = quadtree.node { // Renamed from 'Cell::Leaf' to 'Node::Leaf' and 'quadtree.cell' to 'quadtree.node'
             assert_eq!(points.len(), 1);
             assert_eq!(points[0], point);
         } else {
-            panic!("Quadtree should still be a Leaf after one insertion");
+            panic!("Quadtree should still be a Leaf node after one insertion"); // Renamed from 'Leaf' to 'Leaf node'
         }
     }
 }
