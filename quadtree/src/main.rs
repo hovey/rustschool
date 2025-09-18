@@ -9,16 +9,16 @@ fn main() {
         width: 100.0,
         height: 100.0,
     };
-    
+
     let mut quadtree = Quadtree::new(boundary, 2);
 
     println!("Inserting points...");
     // sw quadrant
-    quadtree.insert(Point { x: 10.0, y: 10.0});
-    quadtree.insert(Point { x: 12.0, y: 15.0});
+    quadtree.insert(Point { x: 10.0, y: 10.0 });
+    quadtree.insert(Point { x: 12.0, y: 15.0 });
     // nw quadrant
-    quadtree.insert(Point { x: 80.0, y: 80.0});
-    quadtree.insert(Point { x: 90.0, y: 95.0});
+    quadtree.insert(Point { x: 80.0, y: 80.0 });
+    quadtree.insert(Point { x: 90.0, y: 95.0 });
     // nw quadrant
     quadtree.insert(Point { x: 40.0, y: 60.0 });
     // se quadrant
@@ -33,5 +33,4 @@ fn main() {
         Ok(_) => println!("Visualization command sent."),
         Err(e) => eprintln!("Visualization failed: {}", e),
     }
-
 }

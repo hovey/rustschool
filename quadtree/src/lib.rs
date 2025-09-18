@@ -1,8 +1,8 @@
-use std::process::Command;
+use serde::Serialize;
+use std::env; // Needed for env::current_dir()
 use std::fs::File;
 use std::io::Write;
-use std::env;  // Needed for env::current_dir()
-use serde::Serialize;
+use std::process::Command;
 
 // The general point definition in R^2, which will be used for the node origin
 // as well as for points contained in the quadtree.
@@ -27,9 +27,11 @@ pub struct Rectangle {
 // type with infinite size, the children are usually stored in a Box, which allocates
 // them on the heap.
 #[derive(Debug, Serialize)]
-pub enum Node{
+pub enum Node {
     // A leaf node that stores a list of points
-    Leaf { points: Vec<Point> },
+    Leaf {
+        points: Vec<Point>,
+    },
     // An internal node that has four children
     Children {
         nw: Box<Quadtree>,
@@ -52,10 +54,10 @@ impl Rectangle {
     // Function to check if a point is within the quadtree's boundary.  If it
     // is, return true, otherwise returen false.
     pub fn contains(&self, point: &Point) -> bool {
-        point.x >= self.origin.x &&
-        point.x < self.origin.x + self.width &&
-        point.y >= self.origin.y &&
-        point.y < self.origin.y + self.height
+        point.x >= self.origin.x
+            && point.x < self.origin.x + self.width
+            && point.y >= self.origin.y
+            && point.y < self.origin.y + self.height
     }
 }
 
@@ -80,7 +82,7 @@ impl Quadtree {
         }
 
         match &mut self.node {
-            Node::Leaf { points} => {
+            Node::Leaf { points } => {
                 points.push(point);
                 if self.level < self.max_levels {
                     self.subdivide();
@@ -90,14 +92,11 @@ impl Quadtree {
                 // Insert into the correct child, trying each one.
                 if nw.insert(point.clone()) {
                     // Point was inserted into nw
-                }
-                else if ne.insert(point.clone()) {
+                } else if ne.insert(point.clone()) {
                     // Point was inserted into ne
-                 }
-                else if sw.insert(point.clone()) {
+                } else if sw.insert(point.clone()) {
                     // Point was inserted into sw
-                }
-                else if se.insert(point) { 
+                } else if se.insert(point) {
                     // Point was inserted into se
                 }
             }
@@ -121,12 +120,18 @@ impl Quadtree {
         let child_level = self.level + 1;
 
         let nw_boundary = Rectangle {
-            origin: Point { x, y: y + half_height },
+            origin: Point {
+                x,
+                y: y + half_height,
+            },
             width: half_width,
             height: half_height,
         };
         let ne_boundary = Rectangle {
-            origin: Point { x: x + half_width, y: y + half_height },
+            origin: Point {
+                x: x + half_width,
+                y: y + half_height,
+            },
             width: half_width,
             height: half_height,
         };
@@ -136,21 +141,40 @@ impl Quadtree {
             height: half_height,
         };
         let se_boundary = Rectangle {
-            origin: Point { x: x + half_width, y },
+            origin: Point {
+                x: x + half_width,
+                y,
+            },
             width: half_width,
             height: half_height,
         };
 
-        let nw = Box::new(Quadtree::new_with_level(nw_boundary, child_level, self.max_levels));
-        let ne = Box::new(Quadtree::new_with_level(ne_boundary, child_level, self.max_levels));
-        let sw = Box::new(Quadtree::new_with_level(sw_boundary, child_level, self.max_levels));
-        let se = Box::new(Quadtree::new_with_level(se_boundary, child_level, self.max_levels));
-    
+        let nw = Box::new(Quadtree::new_with_level(
+            nw_boundary,
+            child_level,
+            self.max_levels,
+        ));
+        let ne = Box::new(Quadtree::new_with_level(
+            ne_boundary,
+            child_level,
+            self.max_levels,
+        ));
+        let sw = Box::new(Quadtree::new_with_level(
+            sw_boundary,
+            child_level,
+            self.max_levels,
+        ));
+        let se = Box::new(Quadtree::new_with_level(
+            se_boundary,
+            child_level,
+            self.max_levels,
+        ));
+
         // Replace the leaf node with the new children nodes
         self.node = Node::Children { nw, ne, sw, se };
-    
+
         // Re-insert all the points that were in the old leaf node.
-        for p in points { 
+        for p in points {
             self.insert(p);
         }
     }
@@ -158,28 +182,36 @@ impl Quadtree {
         serde_json::to_string_pretty(self)
     }
     pub fn visualize(&self) -> Result<(), String> {
-        let json_data = self.to_json().map_err(|e| format!("Failed to serialize quadtree to JSON: {}", e))?;
+        let json_data = self
+            .to_json()
+            .map_err(|e| format!("Failed to serialize quadtree to JSON: {}", e))?;
 
         // Create a temporary file to store the JSON data
         let temp_dir = env::temp_dir();
         let temp_file_path = temp_dir.join("quadtree_data.json");
-        let mut file = File::create(&temp_file_path).map_err(|e| format!("Failed to create temporary file: {}", e))?;
-        file.write_all(json_data.as_bytes()).map_err(|e| format!("Failed to write JSON to temporary file: {}", e))?;
-    
+        let mut file = File::create(&temp_file_path)
+            .map_err(|e| format!("Failed to create temporary file: {}", e))?;
+        file.write_all(json_data.as_bytes())
+            .map_err(|e| format!("Failed to write JSON to temporary file: {}", e))?;
+
         // Get the current working directory to find the PYthon script
-        let current_dir = env::current_dir().map_err(|e| format!("Failed to get current directory: {}", e))?;
+        let current_dir =
+            env::current_dir().map_err(|e| format!("Failed to get current directory: {}", e))?;
         let script_path = current_dir.join("visualize_quadtree.py");
 
         // Execute the Python script
-        let output = Command::new("python3")  // Use "python" or "python3" depending on your system
+        let output = Command::new("python3") // Use "python" or "python3" depending on your system
             .arg(script_path)
-            .arg(temp_file_path)  // Pass the path to the JSON file as an argument
+            .arg(temp_file_path) // Pass the path to the JSON file as an argument
             .output()
             .map_err(|e| format!("Failed to execute Python script: {}", e))?;
-    
+
         if output.status.success() {
             println!("Python script executed successfully.");
-            println!("Python stdout:\n{}", String::from_utf8_lossy(&output.stdout));
+            println!(
+                "Python stdout:\n{}",
+                String::from_utf8_lossy(&output.stdout)
+            );
             Ok(())
         } else {
             Err(format!(
@@ -204,15 +236,15 @@ mod tests {
             height: 10.0,
         };
 
-        assert!(rect.contains(&Point { x: 5.0, y: 5.0 }));  // inside
-        assert!(rect.contains(&Point { x: 0.0, y: 5.0 }));  // on left edge (inclusive)
-        assert!(!rect.contains(&Point { x: 10.0, y: 5.0 }));  // on right edge (exclusive)
-        assert!(rect.contains(&Point { x: 5.0, y: 0.0 }));  // on bottom edge (inclusive)
-        assert!(!rect.contains(&Point { x: 5.0, y: 10.0 }));  // on top edge (exclusive)
-        assert!(!rect.contains(&Point { x: -1.0, y: 5.0}));  // outside left
-        assert!(!rect.contains(&Point { x: 11.0, y: 5.0}));  // outside left
-        assert!(!rect.contains(&Point { x: 5.0, y: -1.0}));  // outside bottom
-        assert!(!rect.contains(&Point { x: 5.0, y: 11.0}));  // outside top
+        assert!(rect.contains(&Point { x: 5.0, y: 5.0 })); // inside
+        assert!(rect.contains(&Point { x: 0.0, y: 5.0 })); // on left edge (inclusive)
+        assert!(!rect.contains(&Point { x: 10.0, y: 5.0 })); // on right edge (exclusive)
+        assert!(rect.contains(&Point { x: 5.0, y: 0.0 })); // on bottom edge (inclusive)
+        assert!(!rect.contains(&Point { x: 5.0, y: 10.0 })); // on top edge (exclusive)
+        assert!(!rect.contains(&Point { x: -1.0, y: 5.0 })); // outside left
+        assert!(!rect.contains(&Point { x: 11.0, y: 5.0 })); // outside left
+        assert!(!rect.contains(&Point { x: 5.0, y: -1.0 })); // outside bottom
+        assert!(!rect.contains(&Point { x: 5.0, y: 11.0 })); // outside top
     }
 
     #[test]
@@ -257,10 +289,10 @@ mod tests {
             height: 100.0,
         };
         let mut quadtree = Quadtree::new(boundary, 1);
-        let point = Point { x: 50.0, y: 50.0 };  // Point will be in ne quadrant
+        let point = Point { x: 50.0, y: 50.0 }; // Point will be in ne quadrant
 
         assert!(quadtree.insert(point.clone()));
-        if let Node::Children { nw, ne, sw, se} = quadtree.node {
+        if let Node::Children { nw, ne, sw, se } = quadtree.node {
             // Assert that all children are Leaf nodes
             assert!(matches!(nw.node, Node::Leaf { .. }));
             assert!(matches!(ne.node, Node::Leaf { .. }));
@@ -291,7 +323,6 @@ mod tests {
             } else {
                 panic!("se child should be an empty Leaf node")
             }
-
         } else {
             panic!("Quadtree should be a Children node after subdivision with max_levels = 1.");
         }
