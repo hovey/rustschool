@@ -7,7 +7,7 @@ struct Point {
 }
 
 // Boundary of a quadtree node
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq)]
 struct Rectangle {
     origin: Point,
     width: f32,
@@ -33,15 +33,12 @@ enum Node{
     },
 }
 
-// The maximum number of levels that can exist it the quadtree.  The first
-// level is level = 0.
-const MAX_LEVELS: usize = 2;
-
 // the main Quadtree struct
 #[derive(Debug)]
 struct Quadtree {
     boundary: Rectangle,
     level: usize,
+    max_levels: usize,
     node: Node,
 }
 
@@ -58,14 +55,15 @@ impl Rectangle {
 
 impl Quadtree {
     // Public constructor for the root of the quadtree.
-    pub fn new(boundary: Rectangle) -> Self {
-        Self::new_with_level(boundary, 0)
+    pub fn new(boundary: Rectangle, max_levels: usize) -> Self {
+        Self::new_with_level(boundary, 0, max_levels)
     }
     // Internal constructor that includes the level
-    fn new_with_level(boundary: Rectangle, level: usize) -> Self {
+    fn new_with_level(boundary: Rectangle, level: usize, max_levels: usize) -> Self {
         Self {
             boundary,
             level,
+            max_levels,
             node: Node::Leaf { points: Vec::new() },
         }
     }
@@ -75,10 +73,10 @@ impl Quadtree {
             return false;
         }
 
-        match &mut self.node { // Renamed from 'self.cell' to 'self.node'
+        match &mut self.node {
             Node::Leaf { points} => {
                 points.push(point);
-                if self.level < MAX_LEVELS {
+                if self.level < self.max_levels {
                     self.subdivide();
                 }
             }
@@ -137,13 +135,13 @@ impl Quadtree {
             height: half_height,
         };
 
-        let nw = Box::new(Quadtree::new_with_level(nw_boundary, child_level));
-        let ne = Box::new(Quadtree::new_with_level(ne_boundary, child_level));
-        let sw = Box::new(Quadtree::new_with_level(sw_boundary, child_level));
-        let se = Box::new(Quadtree::new_with_level(se_boundary, child_level));
+        let nw = Box::new(Quadtree::new_with_level(nw_boundary, child_level, self.max_levels));
+        let ne = Box::new(Quadtree::new_with_level(ne_boundary, child_level, self.max_levels));
+        let sw = Box::new(Quadtree::new_with_level(sw_boundary, child_level, self.max_levels));
+        let se = Box::new(Quadtree::new_with_level(se_boundary, child_level, self.max_levels));
     
         // Replace the leaf node with the new children nodes
-        self.node = Node::Children { nw, ne, sw, se }; // Renamed from 'self.cell' to 'self.node' and 'Cell::Children' to 'Node::Children'
+        self.node = Node::Children { nw, ne, sw, se };
     
         // Re-insert all the points that were in the old leaf node.
         for p in points { 
@@ -176,21 +174,84 @@ mod tests {
     }
 
     #[test]
-    fn test_quadtree_insert_single_point() {
+    fn test_quadtree_new() {
         let boundary = Rectangle {
             origin: Point { x: 0.0, y: 0.0 },
             width: 100.0,
             height: 100.0,
         };
-        let mut quadtree = Quadtree::new(boundary);
+        let quadtree = Quadtree::new(boundary.clone(), 2);
+
+        assert_eq!(quadtree.boundary, boundary);
+        assert_eq!(quadtree.level, 0);
+        assert_eq!(quadtree.max_levels, 2);
+        assert!(matches!(quadtree.node, Node::Leaf { points } if points.is_empty()));
+    }
+
+    #[test]
+    fn test_quadtree_insert_single_point_max_level_0() {
+        let boundary = Rectangle {
+            origin: Point { x: 0.0, y: 0.0 },
+            width: 100.0,
+            height: 100.0,
+        };
+        let mut quadtree = Quadtree::new(boundary, 0);
         let point = Point { x: 50.0, y: 60.0 };
 
         assert!(quadtree.insert(point.clone()));
-        if let Node::Leaf { points } = quadtree.node { // Renamed from 'Cell::Leaf' to 'Node::Leaf' and 'quadtree.cell' to 'quadtree.node'
+        if let Node::Leaf { points } = quadtree.node {
             assert_eq!(points.len(), 1);
             assert_eq!(points[0], point);
         } else {
-            panic!("Quadtree should still be a Leaf node after one insertion"); // Renamed from 'Leaf' to 'Leaf node'
+            panic!("Quadtree should still be a Leaf if max_levels is zero.");
+        }
+    }
+
+    #[test]
+    fn test_quadtree_insert_single_point_max_level_1() {
+        let boundary = Rectangle {
+            origin: Point { x: 0.0, y: 0.0 },
+            width: 100.0,
+            height: 100.0,
+        };
+        let mut quadtree = Quadtree::new(boundary, 1);
+        let point = Point { x: 50.0, y: 50.0 };  // Point will be in ne quadrant
+
+        assert!(quadtree.insert(point.clone()));
+        if let Node::Children { nw, ne, sw, se} = quadtree.node {
+            // Assert that all children are Leaf nodes
+            assert!(matches!(nw.node, Node::Leaf { .. }));
+            assert!(matches!(ne.node, Node::Leaf { .. }));
+            assert!(matches!(sw.node, Node::Leaf { .. }));
+            assert!(matches!(se.node, Node::Leaf { .. }));
+
+            // Assert that the ne child contains the point
+            if let Node::Leaf { points } = ne.node {
+                assert_eq!(points.len(), 1);
+                assert_eq!(points[0], point)
+            } else {
+                panic!("ne child should be a Leaf with the point.")
+            }
+
+            // Assert that the other children are empty Lead nodes
+            if let Node::Leaf { points } = nw.node {
+                assert!(points.is_empty());
+            } else {
+                panic!("nw child should be an empty Leaf node")
+            }
+            if let Node::Leaf { points } = sw.node {
+                assert!(points.is_empty());
+            } else {
+                panic!("sw child should be an empty Leaf node")
+            }
+            if let Node::Leaf { points } = se.node {
+                assert!(points.is_empty());
+            } else {
+                panic!("se child should be an empty Leaf node")
+            }
+
+        } else {
+            panic!("Quadtree should be a Children node after subdivision with max_levels = 1.");
         }
     }
 }
@@ -206,7 +267,7 @@ fn main() {
         height: 100.0,
     };
     
-    let mut quadtree = Quadtree::new(boundary);
+    let mut quadtree = Quadtree::new(boundary, 2);
 
     println!("Inserting points...");
     // sw quadrant
