@@ -10,7 +10,7 @@ fn main() {
         height: 2.0,
     };
 
-    let mut quadtree = Quadtree::new(boundary, 5);
+    let mut quadtree = Quadtree::new(boundary, 1);
 
     println!("Inserting points...");
     // sw quadrant

@@ -1,0 +1,36 @@
+{
+    "autoAccept": false,
+    "coreTools": [
+        "FileTool(read)",
+        "FileTool(write)",
+        "ReadFile",
+        "ReadManyFiles",
+        "ShellTool(rustc)",
+        "ShellTool(cargo)",
+    ],
+    "excludeTools": [
+        "ShellTool(rm -rf)",
+        "ShellTool(sudo)",
+        "ShellTool(mv)",
+        "WebTool",
+    ],
+    "fileFiltering": {
+        "respectGitIgnore": true,
+        "include": [
+            "/*.rs",
+            "/.toml",
+            "**/.md",
+            "/*.txt",
+            "/.json",
+            "**/.yaml",
+            "/*.yml",
+            "/.ini",
+            "**/.csv",
+            "/*.log",
+            "/.html",
+            "**/.css",
+        ],
+        "exclude": ["/target/", "/node_modules/", "/.git/", "**/secrets.rs"],
+    },
+    "theme": "Dracula",
+}

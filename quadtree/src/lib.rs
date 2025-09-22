@@ -1,19 +1,18 @@
-use dirs;
+// use dirs;
 use serde::Serialize;
 use std::env; // Needed for env::current_dir()
 use std::fs::{self, File};
 use std::io::Write;
 use std::process::Command;
 
-// The general point definition in R^2, which will be used for the node origin
-// as well as for points contained in the quadtree.
+/// Represents a point in 2D space.
 #[derive(Debug, Clone, PartialEq, Serialize)]
 pub struct Point {
     pub x: f32,
     pub y: f32,
 }
 
-// Boundary of a quadtree node
+/// Represents an axis-aligned rectangular boundary.
 #[derive(Debug, Clone, PartialEq, Serialize)]
 pub struct Rectangle {
     pub origin: Point,
@@ -21,6 +20,7 @@ pub struct Rectangle {
     pub height: f32,
 }
 
+/// Represents the state of a quadtree node.
 // Enum to represent the state of a node.
 // To implement the recursive nw, ne, sw, se children, a common and idiomatic
 // Rust pattern is to use an enum to represent the two states of a quadtree node:
@@ -29,11 +29,11 @@ pub struct Rectangle {
 // them on the heap.
 #[derive(Debug, Serialize)]
 pub enum Node {
-    // A leaf node that stores a list of points
+    /// A leaf node that stores a list of points.
     Leaf {
         points: Vec<Point>,
     },
-    // An internal node that has four children
+    /// An internal node containing four children quadtrees.
     Children {
         nw: Box<Quadtree>,
         ne: Box<Quadtree>,
@@ -42,7 +42,7 @@ pub enum Node {
     },
 }
 
-// the main Quadtree struct
+/// A Quadtree data structure.
 #[derive(Debug, Serialize)]
 pub struct Quadtree {
     pub boundary: Rectangle,
@@ -52,8 +52,9 @@ pub struct Quadtree {
 }
 
 impl Rectangle {
-    // Function to check if a point is within the quadtree's boundary.  If it
-    // is, return true, otherwise returen false.
+    /// Checks if a point is within the rectangule's boundary.
+    ///
+    /// The check is inclusive of the origin and exclusive of the top and right edges.
     pub fn contains(&self, point: &Point) -> bool {
         point.x >= self.origin.x
             && point.x < self.origin.x + self.width
@@ -63,7 +64,12 @@ impl Rectangle {
 }
 
 impl Quadtree {
-    // Public constructor for the root of the quadtree.
+    /// Creates a new, empty Quadtree with a given boundary and maximum depth.
+    ///
+    /// # Arguments
+    ///
+    /// * `boundary` - The axis-aligned boundary of the root node.
+    /// * `level_max` - The maximum number of times the tree can be subdivided.
     pub fn new(boundary: Rectangle, level_max: usize) -> Self {
         Self::new_with_level(boundary, 0, level_max)
     }
@@ -76,7 +82,18 @@ impl Quadtree {
             node: Node::Leaf { points: Vec::new() },
         }
     }
-    // Insert a point into the quadtree
+    /// Inserts a point into the quadtree.
+    ///
+    /// The point is recursively inserted into the appropriate leaf node.
+    /// This function does not trigger subdivision.
+    ///
+    /// # Arguments
+    ///
+    /// * `point` - The point to insert.
+    ///
+    /// # Returns
+    ///
+    /// `true` if the point is within the quadtree's boundary and was inserted, `false` otherwise.
     pub fn insert(&mut self, point: Point) -> bool {
         if !self.boundary.contains(&point) {
             return false;
@@ -88,7 +105,7 @@ impl Quadtree {
                 // if self.level < self.level_max {
                 //     self.subdivide();
                 // }
-                return true
+                return true;
             }
             Node::Children { nw, ne, sw, se } => {
                 // Create a performant version to avoid redundant boundary checks.
@@ -108,20 +125,6 @@ impl Quadtree {
                         ne.insert(point)
                     }
                 }
-
-                // if nw.boundary.contains(&point) {
-                //     nw.insert(point)
-                // } else if ne.boundary.contains(&point) {
-                //     ne.insert(point)
-                // } else if sw.boundary.contains(&point) {
-                //     sw.insert(point)
-                // } else if se.boundary.contains(&point) {
-                //     se.insert(point)
-                // } else {
-                //     // This should not happen if te point is wihtin the parent's
-                //     // boundary and the children's boundaries are correct.
-                //     return false
-                // }
             }
         }
     }
@@ -198,7 +201,7 @@ impl Quadtree {
                     points.push(p);
                 }
             } else if ne.boundary.contains(&p) {
-                if let Node::Leaf { points} = &mut ne.node {
+                if let Node::Leaf { points } = &mut ne.node {
                     points.push(p);
                 }
             } else if sw.boundary.contains(&p) {
@@ -215,6 +218,11 @@ impl Quadtree {
         self.node = Node::Children { nw, ne, sw, se };
     }
 
+    /// Refines the quadtree by subdividing leaves that contain points.
+    ///
+    /// This function traverses the tree and subdivides any leaf node that
+    /// contains one or more points and has not yet reached `level_max`.
+    /// The process is recursive.
     pub fn refine(&mut self) {
         // If the current node is a leaf that contains points and has not reached the
         // level_max, then subdivide it
@@ -245,9 +253,11 @@ impl Quadtree {
         // println!("Generated YAML data:\n{}", yaml_data);
         println!("Generated YAML data.\n");
 
-        let home_dir =
-            dirs::home_dir().ok_or_else(|| "Could not find the home directory".to_string())?;
-        let custom_temp_dir = home_dir.join("scratch").join("quadtree");
+        // let home_dir =
+        //     dirs::home_dir().ok_or_else(|| "Could not find the home directory".to_string())?;
+        // let custom_temp_dir = home_dir.join("scratch").join("quadtree");
+        let temp_dir = env::temp_dir();
+        let custom_temp_dir = temp_dir.join("quadtree");
 
         // Ensure the custom directory exists
         fs::create_dir_all(&custom_temp_dir).map_err(|e| {

@@ -50,7 +50,7 @@ def draw_quadtree(ax, node_data, colors, level=0):
     linestyle = "dashed" if level == 0 else "solid"
     linewidth = 4 if level == 0 else 2
 
-    print(f"Drawing level: {level}")
+    # print(f"Drawing level: {level}")
 
     # Draw the boundary of the current node
     boundary = node_data["boundary"]
