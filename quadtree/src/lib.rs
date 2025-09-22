@@ -91,19 +91,37 @@ impl Quadtree {
                 return true
             }
             Node::Children { nw, ne, sw, se } => {
-                if nw.boundary.contains(&point) {
-                    nw.insert(point)
-                } else if ne.boundary.contains(&point) {
-                    ne.insert(point)
-                } else if sw.boundary.contains(&point) {
-                    sw.insert(point)
-                } else if se.boundary.contains(&point) {
-                    se.insert(point)
+                // Create a performant version to avoid redundant boundary checks.
+                let center_x = self.boundary.origin.x + self.boundary.width / 2.0;
+                let center_y = self.boundary.origin.y + self.boundary.height / 2.0;
+
+                if point.x < center_x {
+                    if point.y < center_y {
+                        sw.insert(point)
+                    } else {
+                        nw.insert(point)
+                    }
                 } else {
-                    // This should not happen if te point is wihtin the parent's
-                    // boundary and the children's boundaries are correct.
-                    return false
+                    if point.y < center_y {
+                        se.insert(point)
+                    } else {
+                        ne.insert(point)
+                    }
                 }
+
+                // if nw.boundary.contains(&point) {
+                //     nw.insert(point)
+                // } else if ne.boundary.contains(&point) {
+                //     ne.insert(point)
+                // } else if sw.boundary.contains(&point) {
+                //     sw.insert(point)
+                // } else if se.boundary.contains(&point) {
+                //     se.insert(point)
+                // } else {
+                //     // This should not happen if te point is wihtin the parent's
+                //     // boundary and the children's boundaries are correct.
+                //     return false
+                // }
             }
         }
     }
@@ -196,6 +214,7 @@ impl Quadtree {
         // Replace the leaf node with the new children nodes
         self.node = Node::Children { nw, ne, sw, se };
     }
+
     pub fn refine(&mut self) {
         // If the current node is a leaf that contains points and has not reached the
         // level_max, then subdivide it
@@ -217,6 +236,7 @@ impl Quadtree {
     pub fn to_yaml(&self) -> Result<String, serde_yaml::Error> {
         serde_yaml::to_string(self)
     }
+
     pub fn visualize(&self) -> Result<(), String> {
         let yaml_data = self
             .to_yaml()
