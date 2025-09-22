@@ -47,7 +47,7 @@ pub enum Node {
 pub struct Quadtree {
     pub boundary: Rectangle,
     pub level: usize,
-    pub max_levels: usize,
+    pub level_max: usize,
     pub node: Node,
 }
 
@@ -64,15 +64,15 @@ impl Rectangle {
 
 impl Quadtree {
     // Public constructor for the root of the quadtree.
-    pub fn new(boundary: Rectangle, max_levels: usize) -> Self {
-        Self::new_with_level(boundary, 0, max_levels)
+    pub fn new(boundary: Rectangle, level_max: usize) -> Self {
+        Self::new_with_level(boundary, 0, level_max)
     }
     // Internal constructor that includes the level
-    fn new_with_level(boundary: Rectangle, level: usize, max_levels: usize) -> Self {
+    fn new_with_level(boundary: Rectangle, level: usize, level_max: usize) -> Self {
         Self {
             boundary,
             level,
-            max_levels,
+            level_max,
             node: Node::Leaf { points: Vec::new() },
         }
     }
@@ -85,7 +85,7 @@ impl Quadtree {
         match &mut self.node {
             Node::Leaf { points } => {
                 points.push(point);
-                if self.level < self.max_levels {
+                if self.level < self.level_max {
                     self.subdivide();
                 }
             }
@@ -153,22 +153,22 @@ impl Quadtree {
         let nw = Box::new(Quadtree::new_with_level(
             nw_boundary,
             child_level,
-            self.max_levels,
+            self.level_max,
         ));
         let ne = Box::new(Quadtree::new_with_level(
             ne_boundary,
             child_level,
-            self.max_levels,
+            self.level_max,
         ));
         let sw = Box::new(Quadtree::new_with_level(
             sw_boundary,
             child_level,
-            self.max_levels,
+            self.level_max,
         ));
         let se = Box::new(Quadtree::new_with_level(
             se_boundary,
             child_level,
-            self.max_levels,
+            self.level_max,
         ));
 
         // Replace the leaf node with the new children nodes
@@ -187,7 +187,8 @@ impl Quadtree {
             .to_yaml()
             .map_err(|e| format!("Failed to serialize quadtree to YAML: {}", e))?;
 
-        println!("Generated YAML data:\n{}", yaml_data);
+        // println!("Generated YAML data:\n{}", yaml_data);
+        println!("Generated YAML data.\n");
 
         let home_dir =
             dirs::home_dir().ok_or_else(|| "Could not find the home directory".to_string())?;
@@ -219,7 +220,7 @@ impl Quadtree {
         let script_path = current_dir.join("visualize_quadtree.py");
 
         // Execute the Python script
-        let output = Command::new("python3") // Use "python" or "python3" depending on your system
+        let output = Command::new("python") // Use "python" or "python3" depending on your system
             .arg(script_path)
             .arg(temp_file_path) // Pass the path to the JSON file as an argument
             .output()
@@ -277,7 +278,7 @@ mod tests {
 
         assert_eq!(quadtree.boundary, boundary);
         assert_eq!(quadtree.level, 0);
-        assert_eq!(quadtree.max_levels, 2);
+        assert_eq!(quadtree.level_max, 2);
         assert!(matches!(quadtree.node, Node::Leaf { points } if points.is_empty()));
     }
 
@@ -296,7 +297,7 @@ mod tests {
             assert_eq!(points.len(), 1);
             assert_eq!(points[0], point);
         } else {
-            panic!("Quadtree should still be a Leaf if max_levels is zero.");
+            panic!("Quadtree should still be a Leaf if level_max is zero.");
         }
     }
 
@@ -343,7 +344,7 @@ mod tests {
                 panic!("se child should be an empty Leaf node")
             }
         } else {
-            panic!("Quadtree should be a Children node after subdivision with max_levels = 1.");
+            panic!("Quadtree should be a Children node after subdivision with level_max = 1.");
         }
     }
 }

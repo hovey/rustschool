@@ -7,13 +7,15 @@ Example:
 
 """
 
-import json
 import sys
+from pathlib import Path
+from typing import Final
+import yaml
 
+from matplotlib import rc
 import matplotlib.colors as mcolors
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
-import yaml
 
 
 def construct_quadtree_leaf(loader, node):
@@ -81,10 +83,18 @@ def draw_quadtree(ax, node_data, colors, level=0):
 
 
 def main():
-    """The main entry point for the scrirpt."""
+    """The main entry point for the script."""
     if len(sys.argv) < 2:
         print("Usage: python3 visualize_quadtree.py <path_to_yaml_file>")
         sys.exit(1)
+
+    dpi: Final[int] = 300
+    show: Final[bool] = False
+    save: Final[bool] = True
+    latex: Final[bool] = True
+    if latex:
+        rc("font", **{"family": "serif", "serif": ["Computer Modern Roman"]})
+        rc("text", usetex=True)
 
     yaml_file_path = sys.argv[1]
     print(f"Processing file: {yaml_file_path}")
@@ -95,8 +105,9 @@ def main():
             quadtree_data = yaml.load(
                 f, Loader=yaml.FullLoader
             )  # needed to resolve custom tags
-        print("Python successfully loaded YAML data:")
-        print(json.dumps(quadtree_data, indent=2))
+        print("Python successfully loaded YAML data.")
+        # print("Python successfully loaded YAML data:")
+        # print(json.dumps(quadtree_data, indent=2))
     except FileNotFoundError:
         print(f"Error: YAML file not found at {yaml_file_path}")
         sys.exit(1)
@@ -106,7 +117,9 @@ def main():
         )
         sys.exit(1)
 
-    fig, ax = plt.subplots(figsize=(6.0, 6.0), dpi=100)
+    level_max = quadtree_data["level_max"]
+
+    fig, ax = plt.subplots(figsize=(6.0, 6.0), dpi=dpi)
     ax.set_aspect("equal", adjustable="box")
 
     # Define colors for each level
@@ -127,11 +140,21 @@ def main():
     draw_quadtree(ax, quadtree_data, colors)
 
     plt.title("Quadtree Visualization")
-    plt.xlabel("x")
-    plt.ylabel("y")
+    plt.title(f"level max = {level_max}")
+    plt.xlabel(r"$x$")
+    plt.ylabel(r"$y$")
     # plt.grid(True)
     plt.grid(False)
-    plt.show()
+    if show:
+        plt.show()
+
+    if save:
+        extension = ".png"  # ".png" | ".pdf" | ".svg"
+        # filename = Path(__file__).stem + "_" + test_case + extension
+        filename = Path(__file__).stem + "_L" + str(level_max) + extension
+        pathfilename = Path.cwd().joinpath(filename)
+        fig.savefig(pathfilename, bbox_inches="tight", pad_inches=0)
+        print(f"Serialized to {pathfilename}")
 
 
 if __name__ == "__main__":
