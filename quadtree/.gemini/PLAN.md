@@ -11,6 +11,7 @@ This plan tracks the development of the Rust Quadtree library.
     - Separated the concerns of point insertion (`insert`) and tree construction (`refine`).
     - Improved the efficiency of `insert` and `subdivide` methods.
     - Corrected project configuration (`Cargo.toml`) and fixed various bugs.
+- [x] **API Documentation**: Added documentation comments to all public structs and functions to improve clarity and enable `cargo doc`.
 - [x] **Visualization**: Created a `visualize` method that serializes the tree to YAML and uses an external Python script to generate a PNG image. Made this more robust by using the system's temporary directory.
 
 ## Phase 2: Balancing (Next Steps)

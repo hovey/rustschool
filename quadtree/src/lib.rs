@@ -195,22 +195,22 @@ impl Quadtree {
             self.level_max,
         ));
         // Distribute the points of the parent leaf to the new children.
+        // Create a performant version to avoid redundant boundary checks.
+        let center_x = self.boundary.origin.x + self.boundary.width / 2.0;
+        let center_y = self.boundary.origin.y + self.boundary.height / 2.0;
+
         for p in points {
-            if nw.boundary.contains(&p) {
-                if let Node::Leaf { points } = &mut nw.node {
-                    points.push(p);
+            if p.x < center_x {
+                if p.y < center_y {
+                    if let Node::Leaf { points } = &mut sw.node { points.push(p); }
+                } else {
+                    if let Node::Leaf { points } = &mut nw.node { points.push(p); }
                 }
-            } else if ne.boundary.contains(&p) {
-                if let Node::Leaf { points } = &mut ne.node {
-                    points.push(p);
-                }
-            } else if sw.boundary.contains(&p) {
-                if let Node::Leaf { points } = &mut sw.node {
-                    points.push(p);
-                }
-            } else if se.boundary.contains(&p) {
-                if let Node::Leaf { points } = &mut se.node {
-                    points.push(p);
+            } else {
+                if p.y < center_y {
+                    if let Node::Leaf { points } = &mut se.node { points.push(p); }
+                } else {
+                    if let Node::Leaf { points } = &mut ne.node { points.push(p); }
                 }
             }
         }
