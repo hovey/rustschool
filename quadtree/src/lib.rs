@@ -85,24 +85,27 @@ impl Quadtree {
         match &mut self.node {
             Node::Leaf { points } => {
                 points.push(point);
-                if self.level < self.level_max {
-                    self.subdivide();
-                }
+                // if self.level < self.level_max {
+                //     self.subdivide();
+                // }
+                return true
             }
             Node::Children { nw, ne, sw, se } => {
-                // Insert into the correct child, trying each one.
-                if nw.insert(point.clone()) {
-                    // Point was inserted into nw
-                } else if ne.insert(point.clone()) {
-                    // Point was inserted into ne
-                } else if sw.insert(point.clone()) {
-                    // Point was inserted into sw
-                } else if se.insert(point) {
-                    // Point was inserted into se
+                if nw.boundary.contains(&point) {
+                    nw.insert(point)
+                } else if ne.boundary.contains(&point) {
+                    ne.insert(point)
+                } else if sw.boundary.contains(&point) {
+                    sw.insert(point)
+                } else if se.boundary.contains(&point) {
+                    se.insert(point)
+                } else {
+                    // This should not happen if te point is wihtin the parent's
+                    // boundary and the children's boundaries are correct.
+                    return false
                 }
             }
         }
-        true
     }
     // Subdivide a leaf node into four children nodes
     fn subdivide(&mut self) {
@@ -150,35 +153,67 @@ impl Quadtree {
             height: half_height,
         };
 
-        let nw = Box::new(Quadtree::new_with_level(
+        let mut nw = Box::new(Quadtree::new_with_level(
             nw_boundary,
             child_level,
             self.level_max,
         ));
-        let ne = Box::new(Quadtree::new_with_level(
+        let mut ne = Box::new(Quadtree::new_with_level(
             ne_boundary,
             child_level,
             self.level_max,
         ));
-        let sw = Box::new(Quadtree::new_with_level(
+        let mut sw = Box::new(Quadtree::new_with_level(
             sw_boundary,
             child_level,
             self.level_max,
         ));
-        let se = Box::new(Quadtree::new_with_level(
+        let mut se = Box::new(Quadtree::new_with_level(
             se_boundary,
             child_level,
             self.level_max,
         ));
-
+        // Distribute the points of the parent leaf to the new children.
+        for p in points {
+            if nw.boundary.contains(&p) {
+                if let Node::Leaf { points } = &mut nw.node {
+                    points.push(p);
+                }
+            } else if ne.boundary.contains(&p) {
+                if let Node::Leaf { points} = &mut ne.node {
+                    points.push(p);
+                }
+            } else if sw.boundary.contains(&p) {
+                if let Node::Leaf { points } = &mut sw.node {
+                    points.push(p);
+                }
+            } else if se.boundary.contains(&p) {
+                if let Node::Leaf { points } = &mut se.node {
+                    points.push(p);
+                }
+            }
+        }
         // Replace the leaf node with the new children nodes
         self.node = Node::Children { nw, ne, sw, se };
-
-        // Re-insert all the points that were in the old leaf node.
-        for p in points {
-            self.insert(p);
+    }
+    pub fn refine(&mut self) {
+        // If the current node is a leaf that contains points and has not reached the
+        // level_max, then subdivide it
+        if let Node::Leaf { points } = &self.node {
+            if !points.is_empty() && self.level < self.level_max {
+                self.subdivide();
+            }
+        }
+        // After potential subdivision, the node might now be a `Children` node.
+        // If so, recursively refine each child.
+        if let Node::Children { nw, ne, sw, se } = &mut self.node {
+            nw.refine();
+            ne.refine();
+            sw.refine();
+            se.refine();
         }
     }
+
     pub fn to_yaml(&self) -> Result<String, serde_yaml::Error> {
         serde_yaml::to_string(self)
     }
@@ -283,7 +318,7 @@ mod tests {
     }
 
     #[test]
-    fn test_quadtree_insert_single_point_max_level_0() {
+    fn test_quadtree_insert_single_point_level_max_0() {
         let boundary = Rectangle {
             origin: Point { x: 0.0, y: 0.0 },
             width: 100.0,
@@ -302,7 +337,7 @@ mod tests {
     }
 
     #[test]
-    fn test_quadtree_insert_single_point_max_level_1() {
+    fn test_quadtree_insert_single_point_level_max_1() {
         let boundary = Rectangle {
             origin: Point { x: 0.0, y: 0.0 },
             width: 100.0,
@@ -312,6 +347,10 @@ mod tests {
         let point = Point { x: 50.0, y: 50.0 }; // Point will be in ne quadrant
 
         assert!(quadtree.insert(point.clone()));
+
+        // Refine the quadtree to trigger subdivision
+        quadtree.refine();
+
         if let Node::Children { nw, ne, sw, se } = quadtree.node {
             // Assert that all children are Leaf nodes
             assert!(matches!(nw.node, Node::Leaf { .. }));
@@ -320,7 +359,7 @@ mod tests {
             assert!(matches!(se.node, Node::Leaf { .. }));
 
             // Assert that the ne child contains the point
-            if let Node::Leaf { points } = ne.node {
+            if let Node::Leaf { points } = &ne.node {
                 assert_eq!(points.len(), 1);
                 assert_eq!(points[0], point)
             } else {
@@ -328,17 +367,17 @@ mod tests {
             }
 
             // Assert that the other children are empty Lead nodes
-            if let Node::Leaf { points } = nw.node {
+            if let Node::Leaf { points } = &nw.node {
                 assert!(points.is_empty());
             } else {
                 panic!("nw child should be an empty Leaf node")
             }
-            if let Node::Leaf { points } = sw.node {
+            if let Node::Leaf { points } = &sw.node {
                 assert!(points.is_empty());
             } else {
                 panic!("sw child should be an empty Leaf node")
             }
-            if let Node::Leaf { points } = se.node {
+            if let Node::Leaf { points } = &se.node {
                 assert!(points.is_empty());
             } else {
                 panic!("se child should be an empty Leaf node")

@@ -27,6 +27,9 @@ fn main() {
     // println!("\nFinal Quadtree Structure:");
     // println!("{:#?}", quadtree);
 
+    println!("Refining quadtree...");
+    quadtree.refine();
+
     // Call the visualization method
     println!("\nVisualizing quadtree...");
     match quadtree.visualize() {

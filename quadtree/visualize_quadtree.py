@@ -91,7 +91,7 @@ def main():
     dpi: Final[int] = 300
     show: Final[bool] = False
     save: Final[bool] = True
-    latex: Final[bool] = True
+    latex: Final[bool] = False
     if latex:
         rc("font", **{"family": "serif", "serif": ["Computer Modern Roman"]})
         rc("text", usetex=True)
