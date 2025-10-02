@@ -30,9 +30,7 @@ pub struct Rectangle {
 #[derive(Debug, Serialize)]
 pub enum Node {
     /// A leaf node that stores a list of points.
-    Leaf {
-        points: Vec<Point>,
-    },
+    Leaf { points: Vec<Point> },
     /// An internal node containing four children quadtrees.
     Children {
         nw: Box<Quadtree>,
@@ -60,6 +58,14 @@ impl Rectangle {
             && point.x < self.origin.x + self.width
             && point.y >= self.origin.y
             && point.y < self.origin.y + self.height
+    }
+    // Checks if this rectangle intersects with another rectangle.
+    pub fn intersects(&self, other: &Rectangle) -> bool {
+        // No intersection if one rectangle is entirely to side of the other
+        !(self.origin.x > other.origin.x + other.width 
+            || self.origin.x + self.width < other.origin.x
+            || self.origin.y > other.origin.y + other.height
+            || self.origin.y + self.height < other.origin.y)
     }
 }
 
@@ -202,15 +208,23 @@ impl Quadtree {
         for p in points {
             if p.x < center_x {
                 if p.y < center_y {
-                    if let Node::Leaf { points } = &mut sw.node { points.push(p); }
+                    if let Node::Leaf { points } = &mut sw.node {
+                        points.push(p);
+                    }
                 } else {
-                    if let Node::Leaf { points } = &mut nw.node { points.push(p); }
+                    if let Node::Leaf { points } = &mut nw.node {
+                        points.push(p);
+                    }
                 }
             } else {
                 if p.y < center_y {
-                    if let Node::Leaf { points } = &mut se.node { points.push(p); }
+                    if let Node::Leaf { points } = &mut se.node {
+                        points.push(p);
+                    }
                 } else {
-                    if let Node::Leaf { points } = &mut ne.node { points.push(p); }
+                    if let Node::Leaf { points } = &mut ne.node {
+                        points.push(p);
+                    }
                 }
             }
         }
@@ -239,6 +253,178 @@ impl Quadtree {
             sw.refine();
             se.refine();
         }
+    }
+
+    /// Balances the quadtree using the weak balancing condition.
+    ///
+    /// This is a post-processing step that ensures any two adjacent leaf nodes
+    /// (sharing a full edge) differ by at most one level of refinement.
+    /// The function iteratively subdivides leaves until the tree is balanced.
+    pub fn weak_balance(&mut self) {
+        while self.balance_pass_weakly() {
+            // The loop continues as long as a pass makes a change.
+        }
+    }
+
+    /// Recursively collects all immutable references to the leaf nodes in the quadtree.
+    fn get_all_leaves(&self) -> Vec<&Quadtree> {
+        let mut leaves = Vec::new();
+        match &self.node {
+            Node::Leaf { .. } => {
+                leaves.push(self);
+            }
+            Node::Children { nw, ne, sw, se } => {
+                leaves.append(&mut nw.get_all_leaves());
+                leaves.append(&mut ne.get_all_leaves());
+                leaves.append(&mut sw.get_all_leaves());
+                leaves.append(&mut se.get_all_leaves());
+            }
+        }
+        leaves
+    }
+
+    /// Performs a single balancing pass over the quadtree.
+    ///
+    /// Traverses the tree to find leaves that violate the weak balancing condition
+    /// and marks their neighbors for subdivision.
+    ///
+    /// # Returns
+    ///
+    /// `true` if any subdivisions were made, `false` otherwise.
+    fn balance_pass_weakly(&mut self) -> bool {
+        use std::collections::HashSet;
+        
+        // We collect immutable leaves first, find neighbors that need subdivision,
+        // and hten will later re-aquire mutable referneces to subdivide them.
+        let leaves = self.get_all_leaves();
+        let mut to_subdivide = HashSet::new();
+
+        for leaf in &leaves {
+            // `face_neighbors` is not implemented yet, so this part won't trigger.
+            let neighbors = self.face_neighbors(&leaf.boundary);
+            for neighbor in neighbors {
+                if leaf.level > neighbor.level + 1 {
+                    // This neighbor needs to be subdivided.
+                    // We store a raw pointer to it to avoid borrow checker issues
+                    // and to have a unique identifier for the HashSet.
+                    to_subdivide.insert(neighbor as *const Quadtree);
+                }
+            }
+        }
+
+        if to_subdivide.is_empty() {
+            return false;
+        }
+
+        // Now, perform the subdivisions.
+        self.subdivide_leaves_by_pointer(&to_subdivide);
+
+        // Return true to indicate that the tree was modified.
+        true
+    }
+
+    /// Recursively finds and subdivides leaves identified by a set of raw pointers.
+    fn subdivide_leaves_by_pointer(&mut self, to_subdivide: &std::collections::HashSet<*const Quadtree>) {
+        // If the current node is a leaf, check if it needs to be subdivided.
+        if let Node::Leaf { .. } = &self.node {
+            let self_ptr = self as *const Quadtree;
+            if to_subdivide.contains(&self_ptr) && self.level < self.level_max {
+                self.subdivide();
+            }
+        }
+
+        // After potential subdivisions, the node might now be `Children`, so we traverse
+        // into them.
+        if let Node::Children { nw, ne, sw, se } = &mut self.node {
+            nw.subdivide_leaves_by_pointer(to_subdivide);
+            ne.subdivide_leaves_by_pointer(to_subdivide);
+            sw.subdivide_leaves_by_pointer(to_subdivide);
+            se.subdivide_leaves_by_pointer(to_subdivide);
+        }
+    }
+
+    /// Recursively finds all leaves that intersect with a given search area.
+    fn find_leaves_in_bounds<'a>(&'a self, search_area: &Rectangle, found_leaves: &mut Vec<&'a Quadtree>) {
+        if !self.boundary.intersects(search_area) {
+            return;
+        }
+
+        match &self.node {
+            Node::Leaf { .. } => {
+                found_leaves.push(self);
+            }
+            Node::Children { nw, ne, sw, se } => {
+                nw.find_leaves_in_bounds(search_area, found_leaves);
+                ne.find_leaves_in_bounds(search_area, found_leaves);
+                sw.find_leaves_in_bounds(search_area, found_leaves);
+                se.find_leaves_in_bounds(search_area, found_leaves);
+            }
+        }
+    }
+
+    /// Finds all leaf nodes that share a face (edge) with a given boundary.
+    ///
+    /// This function queries the tree from the root to find neighbors to the
+    /// North, South, East, and West of the specified rectangular area.
+    ///
+    /// # Arguments
+    ///
+    /// * `leaf_boundary` - The boundary of the leaf for which to find neighbors.
+    ///
+    /// # Returns
+    ///
+    /// A vector of references to the neighboring leaf quadtrees.
+    fn face_neighbors<'a>(&'a self, leaf_boundary: &Rectangle) -> Vec<&'a Quadtree> {
+        let mut neighbors = Vec::new();
+        // A small epsilon helps robustly find neighbors by creating a thin search
+        // rectangle that slightly overlaps the boundary edge.
+        let epsilon = 0.0001 * leaf_boundary.width;
+
+        // North neighbor search area
+        let north_search = Rectangle {
+            origin: Point {
+                x: leaf_boundary.origin.x,
+                y: leaf_boundary.origin.y + leaf_boundary.height,
+            },
+            width: leaf_boundary.width,
+            height: epsilon,
+        };
+        self.find_leaves_in_bounds(&north_search, &mut neighbors);
+
+        // South neighbor search area
+        let south_search = Rectangle {
+            origin: Point {
+                x: leaf_boundary.origin.x,
+                y: leaf_boundary.origin.y - epsilon,
+            },
+            width: leaf_boundary.width,
+            height: epsilon,
+        };
+        self.find_leaves_in_bounds(&south_search, &mut neighbors);
+
+        // East neighbor search area
+        let east_search = Rectangle {
+            origin: Point {
+                x: leaf_boundary.origin.x + leaf_boundary.width,
+                y: leaf_boundary.origin.y,
+            },
+            width: epsilon,
+            height: leaf_boundary.height,
+        };
+        self.find_leaves_in_bounds(&east_search, &mut neighbors);
+
+        // West neighbor search area
+        let west_search = Rectangle {
+            origin: Point {
+                x: leaf_boundary.origin.x - epsilon,
+                y: leaf_boundary.origin.y,
+            },
+            width: epsilon,
+            height: leaf_boundary.height,
+        };
+        self.find_leaves_in_bounds(&west_search, &mut neighbors);
+
+        neighbors
     }
 
     pub fn to_yaml(&self) -> Result<String, serde_yaml::Error> {
@@ -414,6 +600,60 @@ mod tests {
             }
         } else {
             panic!("Quadtree should be a Children node after subdivision with level_max = 1.");
+        }
+    }
+
+    #[test]
+    fn test_weak_balance() {
+        // Manually create an unbalanced tree.
+        // Setup:
+        // L0: root
+        // L1: NW, NE, SW, SE (all leaves)
+        // L2: NE is subdivided -> NW_NW, NE_NE, NE_SW, NE_SE (leaves)
+        // L3: NE_SW is subdivded -> NE_SW_NW, NE_SW_NE, NE_SW_SW, NE_SW_SE (leaves)
+        //
+        // Imbalance:
+        // The L3 leaf `NE_SW_NW` is face-adjacent to the roof's L1 `NW` leaf.
+        // `leaf.level` = 3, `neighbor.level`=1.
+        // `3 > 1 + 1` is true, so the L1 `NW` leaf must be subdivided.
+
+        let mut tree = Quadtree::new(
+            Rectangle { origin: Point { x: 0.0, y: 0.0 }, width: 4.0, height: 4.0 },
+            4, // level_max
+        );
+
+        // 1. Subdivide to create L1 children.
+        tree.subdivide();
+        let ne_l1 = match &mut tree.node {
+            Node::Children { ne, .. } => ne,
+            _ => panic!("Tree should have children after subdivide"),
+        };
+
+        // 2. Subdivide the L1 NE child to get L2 children.
+        ne_l1.subdivide();
+        let ne_sw_l2 = match &mut ne_l1.node {
+            Node::Children{ sw, .. } => sw,
+            _ => panic!("NE child should have L2 children"),
+        };
+
+        // 3. Subdivide the L2 NE->SW child to get L3 children.
+        ne_sw_l2.subdivide();
+
+        // 4. Run the balancing algorithm.
+        tree.weak_balance();
+
+        // 5. Verify that the root's NW leaf (originally L1) was subdivided.
+        match &tree.node {
+            Node::Children { nw, .. } => {
+                assert_eq!(nw.level, 1, "The NW child's level should be 1");
+                match &nw.node {
+                    Node::Children { .. } => {
+                        // Success! The NW leaf was correctly subdivided into a Children node.
+                    }
+                    _ => panic!("NW node should have been subdivided but it is still a Leaf."),
+                }
+            }
+            _ => panic!("Three should be a Children node."),
         }
     }
 }

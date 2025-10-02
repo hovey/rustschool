@@ -15,7 +15,6 @@ The current code:
 * `L0` square domain $(x, y) \in ([1, 3] \otimes  [-1, 1])$
 * Single point at `(2.6, 0.6)` to trigger refinement.
 
-
 &nbsp; | &nbsp; | &nbsp;
 :---: | :---: | :---:
 ![](img/visualize_quadtree_L0.png) | ![](img/visualize_quadtree_L1.png) | ![](img/visualize_quadtree_L2.png)
@@ -97,3 +96,15 @@ node: !Children
     node: !Leaf
       points: []
 ```
+
+## Balancing
+
+The **balance constraint** is stated as,
+
+* **Weakly balanced quadtree (2:1 balance)**: For a leaf cell `L` at level `l`, any edge-adjacent neighbor cell `N` at level `n` must satisfy `|l - n| ≤ 1`.
+  * Equivalently, if `L` has level `l`, all edge-adjacent neighbors in the four cardinal directions (north, south, east, west) must have levels in the range `[l-1, l+1]`.
+* **Strongly balanced quadtree**: For a leaf cell `L` at level `l`, any edge-adjacent OR corner-adjacent neighbor cell `N` at level `n` must satisfy `|l - n| ≤ 1`. This includes all eight directions: north, south, east, west, and the four diagonal directions (northeast, northwest, southeast, southwest).
+
+**Boundary considerations**: At domain boundaries, a leaf may have fewer than 4 (weakly balanced) or 8 (strongly balanced) neighbors. The constraints apply only to existing neighbors. This is typically understood but worth noting for implementation.
+
+**"Leaf cell" specification**: The balance constraint applies only to a leaf node in the quadtree, not to internal nodes that have children.
