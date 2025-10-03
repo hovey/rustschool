@@ -62,7 +62,7 @@ impl Rectangle {
     // Checks if this rectangle intersects with another rectangle.
     pub fn intersects(&self, other: &Rectangle) -> bool {
         // No intersection if one rectangle is entirely to side of the other
-        !(self.origin.x > other.origin.x + other.width 
+        !(self.origin.x > other.origin.x + other.width
             || self.origin.x + self.width < other.origin.x
             || self.origin.y > other.origin.y + other.height
             || self.origin.y + self.height < other.origin.y)
@@ -135,7 +135,7 @@ impl Quadtree {
         }
     }
     // Subdivide a leaf node into four children nodes
-    fn subdivide(&mut self) {
+    pub fn subdivide(&mut self) {
         // Take the points from the current leaf node, leaving an empty vector in its place.
         let points = if let Node::Leaf { points } = &mut self.node {
             std::mem::take(points)
@@ -293,7 +293,7 @@ impl Quadtree {
     /// `true` if any subdivisions were made, `false` otherwise.
     fn balance_pass_weakly(&mut self) -> bool {
         use std::collections::HashSet;
-        
+
         // We collect immutable leaves first, find neighbors that need subdivision,
         // and hten will later re-aquire mutable referneces to subdivide them.
         let leaves = self.get_all_leaves();
@@ -324,7 +324,10 @@ impl Quadtree {
     }
 
     /// Recursively finds and subdivides leaves identified by a set of raw pointers.
-    fn subdivide_leaves_by_pointer(&mut self, to_subdivide: &std::collections::HashSet<*const Quadtree>) {
+    fn subdivide_leaves_by_pointer(
+        &mut self,
+        to_subdivide: &std::collections::HashSet<*const Quadtree>,
+    ) {
         // If the current node is a leaf, check if it needs to be subdivided.
         if let Node::Leaf { .. } = &self.node {
             let self_ptr = self as *const Quadtree;
@@ -344,7 +347,11 @@ impl Quadtree {
     }
 
     /// Recursively finds all leaves that intersect with a given search area.
-    fn find_leaves_in_bounds<'a>(&'a self, search_area: &Rectangle, found_leaves: &mut Vec<&'a Quadtree>) {
+    fn find_leaves_in_bounds<'a>(
+        &'a self,
+        search_area: &Rectangle,
+        found_leaves: &mut Vec<&'a Quadtree>,
+    ) {
         if !self.boundary.intersects(search_area) {
             return;
         }
@@ -431,13 +438,13 @@ impl Quadtree {
         serde_yaml::to_string(self)
     }
 
-    pub fn visualize(&self) -> Result<(), String> {
+    pub fn visualize(&self, file_suffix: &str) -> Result<(), String> {
         let yaml_data = self
             .to_yaml()
             .map_err(|e| format!("Failed to serialize quadtree to YAML: {}", e))?;
 
         // println!("Generated YAML data:\n{}", yaml_data);
-        println!("Generated YAML data.\n");
+        println!("Generated YAML data for '{}'.", file_suffix);
 
         // let home_dir =
         //     dirs::home_dir().ok_or_else(|| "Could not find the home directory".to_string())?;
@@ -454,8 +461,9 @@ impl Quadtree {
         })?;
         println!("Custom temporary directory: {:?}", custom_temp_dir);
 
-        // Create a temporary JSON output file
-        let temp_file_path = custom_temp_dir.join("quadtree_data.yaml");
+        // Create a temporary YAML output file with the suffix
+        let file_name = format!("quadtree_data_{}.yaml", file_suffix);
+        let temp_file_path = custom_temp_dir.join(&file_name);
         println!("Temporary YAML file path: {:?}", temp_file_path);
 
         let mut file = File::create(&temp_file_path)
@@ -472,13 +480,13 @@ impl Quadtree {
 
         // Execute the Python script
         let output = Command::new("python") // Use "python" or "python3" depending on your system
-            .arg(script_path)
-            .arg(temp_file_path) // Pass the path to the JSON file as an argument
+            .arg(&script_path)
+            .arg(&temp_file_path) // Pass the path to the YAML file as an argument
             .output()
             .map_err(|e| format!("Failed to execute Python script: {}", e))?;
 
         if output.status.success() {
-            println!("Python script executed successfully.");
+            println!("Python script executed successfully for '{}'.", file_suffix);
             println!(
                 "Python stdout:\n{}",
                 String::from_utf8_lossy(&output.stdout)
@@ -486,7 +494,8 @@ impl Quadtree {
             Ok(())
         } else {
             Err(format!(
-                "Python script failed with exit code {:?}\nStdout: {}\nStderr: {}",
+                "Python script failed for '{}' with exit code {:?}\nStdout: {}\nStderr: {}",
+                file_suffix,
                 output.status.code(),
                 String::from_utf8_lossy(&output.stdout),
                 String::from_utf8_lossy(&output.stderr)
@@ -618,7 +627,11 @@ mod tests {
         // `3 > 1 + 1` is true, so the L1 `NW` leaf must be subdivided.
 
         let mut tree = Quadtree::new(
-            Rectangle { origin: Point { x: 0.0, y: 0.0 }, width: 4.0, height: 4.0 },
+            Rectangle {
+                origin: Point { x: 0.0, y: 0.0 },
+                width: 4.0,
+                height: 4.0,
+            },
             4, // level_max
         );
 
@@ -632,7 +645,7 @@ mod tests {
         // 2. Subdivide the L1 NE child to get L2 children.
         ne_l1.subdivide();
         let ne_sw_l2 = match &mut ne_l1.node {
-            Node::Children{ sw, .. } => sw,
+            Node::Children { sw, .. } => sw,
             _ => panic!("NE child should have L2 children"),
         };
 

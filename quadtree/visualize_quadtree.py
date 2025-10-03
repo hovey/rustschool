@@ -99,6 +99,10 @@ def main():
     yaml_file_path = sys.argv[1]
     print(f"Processing file: {yaml_file_path}")
 
+    file_path = Path(yaml_file_path)
+    filename_stem = file_path.stem  # removes the .yaml extension
+    print(f"Filename stem: {filename_stem}")
+
     try:
         with open(yaml_file_path, "r", encoding="utf8") as f:
             # quadtree_data = yaml.safe_load(f)
@@ -140,7 +144,8 @@ def main():
     draw_quadtree(ax, quadtree_data, colors)
 
     plt.title("Quadtree Visualization")
-    plt.title(f"level max = {level_max}")
+    # plt.title(f"level max = {level_max}")
+    plt.title(f"{filename_stem}")
     plt.xlabel(r"$x$")
     plt.ylabel(r"$y$")
     # plt.grid(True)
@@ -151,7 +156,8 @@ def main():
     if save:
         extension = ".png"  # ".png" | ".pdf" | ".svg"
         # filename = Path(__file__).stem + "_" + test_case + extension
-        filename = Path(__file__).stem + "_L" + str(level_max) + extension
+        # filename = Path(__file__).stem + "_L" + str(level_max) + extension
+        filename = filename_stem + extension
         pathfilename = Path.cwd().joinpath(filename)
         fig.savefig(pathfilename, bbox_inches="tight", pad_inches=0)
         print(f"Serialized to {pathfilename}")
