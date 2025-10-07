@@ -121,7 +121,7 @@ def main():
         )
         sys.exit(1)
 
-    level_max = quadtree_data["level_max"]
+    _level_max = quadtree_data["level_max"]
 
     fig, ax = plt.subplots(figsize=(6.0, 6.0), dpi=dpi)
     ax.set_aspect("equal", adjustable="box")
@@ -155,10 +155,9 @@ def main():
 
     if save:
         extension = ".png"  # ".png" | ".pdf" | ".svg"
-        # filename = Path(__file__).stem + "_" + test_case + extension
-        # filename = Path(__file__).stem + "_L" + str(level_max) + extension
+        output_path = file_path.parent  # same directory as input file
         filename = filename_stem + extension
-        pathfilename = Path.cwd().joinpath(filename)
+        pathfilename = output_path.joinpath(filename)
         fig.savefig(pathfilename, bbox_inches="tight", pad_inches=0)
         print(f"Serialized to {pathfilename}")
 

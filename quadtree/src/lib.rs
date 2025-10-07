@@ -1,7 +1,7 @@
 // use dirs;
 use serde::Serialize;
 use std::env; // Needed for env::current_dir()
-use std::fs::{self, File};
+use std::fs::File;
 use std::io::Write;
 use std::process::Command;
 
@@ -50,7 +50,7 @@ pub struct Quadtree {
 }
 
 impl Rectangle {
-    /// Checks if a point is within the rectangule's boundary.
+    /// Checks if a point is within the rectangle's boundary.
     ///
     /// The check is inclusive of the origin and exclusive of the top and right edges.
     pub fn contains(&self, point: &Point) -> bool {
@@ -438,7 +438,7 @@ impl Quadtree {
         serde_yaml::to_string(self)
     }
 
-    pub fn visualize(&self, file_suffix: &str) -> Result<(), String> {
+    pub fn visualize(&self, scratch_path: &str, file_suffix: &str) -> Result<(), String> {
         let yaml_data = self
             .to_yaml()
             .map_err(|e| format!("Failed to serialize quadtree to YAML: {}", e))?;
@@ -446,27 +446,13 @@ impl Quadtree {
         // println!("Generated YAML data:\n{}", yaml_data);
         println!("Generated YAML data for '{}'.", file_suffix);
 
-        // let home_dir =
-        //     dirs::home_dir().ok_or_else(|| "Could not find the home directory".to_string())?;
-        // let custom_temp_dir = home_dir.join("scratch").join("quadtree");
-        let temp_dir = env::temp_dir();
-        let custom_temp_dir = temp_dir.join("quadtree");
-
-        // Ensure the custom directory exists
-        fs::create_dir_all(&custom_temp_dir).map_err(|e| {
-            format!(
-                "Failed to create custom directory {:?}: {}",
-                custom_temp_dir, e
-            )
-        })?;
-        println!("Custom temporary directory: {:?}", custom_temp_dir);
-
         // Create a temporary YAML output file with the suffix
         let file_name = format!("quadtree_data_{}.yaml", file_suffix);
-        let temp_file_path = custom_temp_dir.join(&file_name);
-        println!("Temporary YAML file path: {:?}", temp_file_path);
 
-        let mut file = File::create(&temp_file_path)
+        let path_file_name = std::path::Path::new(scratch_path).join(&file_name);
+        println!("Scratch YAML file path: {:?}", path_file_name);
+
+        let mut file = File::create(&path_file_name)
             .map_err(|e| format!("Failed to create temporary file: {}", e))?;
 
         file.write_all(yaml_data.as_bytes())
@@ -481,7 +467,7 @@ impl Quadtree {
         // Execute the Python script
         let output = Command::new("python") // Use "python" or "python3" depending on your system
             .arg(&script_path)
-            .arg(&temp_file_path) // Pass the path to the YAML file as an argument
+            .arg(&path_file_name) // Pass the path to the YAML file as an argument
             .output()
             .map_err(|e| format!("Failed to execute Python script: {}", e))?;
 

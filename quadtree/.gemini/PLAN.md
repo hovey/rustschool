@@ -2,6 +2,10 @@
 
 This plan tracks the development of the Rust Quadtree library.
 
+## Note on Collaboration
+
+I will make the code updates manually.  Please provide your sugestions, and I will apply them.
+
 ## Context
 
 Use any useful literature and scholarly documents on quadtree definitions, formulation, and implementation, including the following:
