@@ -190,7 +190,7 @@ let mut tree_2 = Quadtree::new(
 );
 ```
 
-Manually subdivide the quadtree:
+Manually `subdivide` the quadtree:
 
 ```rust
 // subdivide four times to create an unbalanced quadtree
@@ -220,14 +220,15 @@ let ne_sw_sw = match &mut ne_sw.node {
 ne_sw_sw.subdivide(); // L3 -> L4
 ```
 
-The unbalanced quadtree is shown below:
+The **unbalanced** (left) and **weakly balanced** (right) quadtrees are shown below:
 
-![quadtree_data_example_2_unbalanced](img/quadtree_data_example_2_unbalanced.png
+unbalanced | weakly balanced
+:---: | :---:
+![quadtree_data_example_2_unbalanced](img/quadtree_data_example_2_unbalanced.png) | ![quadtree_data_example_2_weakly_balanced](img/quadtree_data_example_2_weakly_balanced.png)
 
-### Example: Weakly Balanced Quadtree
-
-The weakly balanced currently has a bug:
-
-![quadtree_data_example_2_weakly_balanced](img/quadtree_data_example_2_weakly_balanced.png)
+The weakly balanced currently has a bug:  The red `SW_NE` level 2 (green) should not be refined to level 3 (red).
+It appears this last tree is actually *strongly* balanced by accident (for now).
 
 ### Example: Strongly Balanced Quadtree
+
+To come.
