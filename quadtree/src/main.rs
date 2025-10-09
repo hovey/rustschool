@@ -25,23 +25,28 @@ fn main() -> Result<(), String> {
     // Example 1
     println!("----------------------------------------------------");
     println!("Example 1: Quadtree Creation and Levels");
-    let boundary = Rectangle {
-        origin: Point { x: 1.0, y: -1.0 },
-        width: 2.0,
-        height: 2.0,
-    };
-
-    let mut tree_1 = Quadtree::new(boundary, 0);
+    // Create a L0 quadtree with a maximum of five refinement levels
+    let mut tree_1 = Quadtree::new(
+        Rectangle {
+            origin: Point { x: 1.0, y: -1.0 },
+            width: 2.0,
+            height: 2.0,
+        },
+        5,
+    );
 
     println!("Inserting points...");
     // ne_ne_sw_sw_ne quadrant (up to level 5 refinement)
     tree_1.insert(Point { x: 2.6, y: 0.6 });
 
-    println!("\nFinal Quadtree Structure:");
+    println!("\nQuadtree before refinement:");
     println!("{:#?}", tree_1);
 
-    println!("Refining quadtree...");
+    println!("\nRefining quadtree...");
     tree_1.refine();
+
+    println!("\nQuadtree after refinement:");
+    println!("{:#?}", tree_1);
 
     // Visualize the unbalanced tree
     println!("\nVisualizing quadtree BEFORE balancing...");

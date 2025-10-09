@@ -438,6 +438,10 @@ impl Quadtree {
         serde_yaml::to_string(self)
     }
 
+    /// Given a quadtree (self), writes the structure of the quadtree to a YAML
+    /// file to the `scratch_path`, then calls the Python script `visualize_quadtree.py`
+    /// to read in the YAML file and visualize the quadtree using MATPLOTLIB, saving
+    /// the figure the `scratch_path`.
     pub fn visualize(&self, scratch_path: &str, file_suffix: &str) -> Result<(), String> {
         let yaml_data = self
             .to_yaml()
