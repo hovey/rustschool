@@ -220,9 +220,9 @@ let ne_sw_sw = match &mut ne_sw.node {
 ne_sw_sw.subdivide(); // L3 -> L4
 ```
 
-The **unbalanced** (left) and **weakly balanced** (right) quadtrees are shown below:
+The **unbalanced** (left) and (? - bug) **weakly balanced** (right) quadtrees are shown below:
 
-unbalanced | weakly balanced
+unbalanced | weakly balanced (? - bug)
 :---: | :---:
 ![quadtree_data_example_2_unbalanced](img/quadtree_data_example_2_unbalanced.png) | ![quadtree_data_example_2_weakly_balanced](img/quadtree_data_example_2_weakly_balanced.png)
 
