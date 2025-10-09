@@ -147,7 +147,7 @@ node: !Children
 ```
 
 The `visualize` method then calls Python with
-[`visualize_quadtree.py`](./visualize_quadtree.py) to create MATPLOTLIB visualizations:
+[`visualize_quadtree.py`](./visualize_quadtree.py) to create *MATPLOTLIB* visualizations:
 
 &nbsp; | &nbsp; | &nbsp;
 :---: | :---: | :---:
@@ -171,6 +171,9 @@ The **balance constraint** is stated as,
 ## Example 2: 
 
 This example uses the `Quadtree` method: `subdivide`, `weak_balance`, and `strong_balance`.
+We recreate the **weakly balanced** quadtree example from [Pitzalis 2021](https://dl.acm.org/doi/pdf/10.1145/3478513.3480508), shown below:
+
+![pitzalis_2021_fig_5](img/pitzalis_2021_fig_5.jpg)
 
 ### Example: Unbalanced Quadtree
 
@@ -190,11 +193,41 @@ let mut tree_2 = Quadtree::new(
 Manually subdivide the quadtree:
 
 ```rust
+// subdivide four times to create an unbalanced quadtree
+println!("Creating an unbalanced tree...");
 
+tree_2.subdivide(); // L0 -> L1
+// Get the NE child
+let ne = match &mut tree_2.node {
+    Node::Children { ne, .. } => ne,
+    _ => panic!("L1 NE child should exist."),
+};
+
+ne.subdivide(); // L1 -> L2
+// Get the NE_SW child
+let ne_sw = match &mut ne.node {
+    Node::Children { sw, .. } => sw,
+    _ => panic!("L2 NE_SW child exist."),
+};
+
+ne_sw.subdivide(); // L2 -> L3
+// Get the NE_SW_SW child
+let ne_sw_sw = match &mut ne_sw.node {
+    Node::Children { sw, .. } => sw,
+    _ => panic!("L3 NW_SW_SW child should exist."),
+};
+
+ne_sw_sw.subdivide(); // L3 -> L4
 ```
 
+The unbalanced quadtree is shown below:
+
+![quadtree_data_example_2_unbalanced](img/quadtree_data_example_2_unbalanced.png
 
 ### Example: Weakly Balanced Quadtree
 
+The weakly balanced currently has a bug:
+
+![quadtree_data_example_2_weakly_balanced](img/quadtree_data_example_2_weakly_balanced.png)
 
 ### Example: Strongly Balanced Quadtree

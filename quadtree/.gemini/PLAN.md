@@ -47,6 +47,17 @@ Use any useful literature and scholarly documents on quadtree definitions, formu
   publisher={Elsevier},
   doi={10.1016/j.proeng.2016.11.007}
 }
+@article{pitzalis2021generalized,
+  title={Generalized adaptive refinement for grid-based hexahedral meshing},
+  author={Pitzalis, Luca and Livesu, Marco and Cherchi, Gianmarco and Gobbetti, Enrico and Scateni, Riccardo},
+  journal={ACM Transactions on Graphics (TOG)},
+  volume={40},
+  number={6},
+  pages={1--13},
+  year={2021},
+  publisher={ACM New York, NY, USA},
+  doi={10.1145/3478513.3480508}
+}
 
 ## Phase 1: Core Implementation (Completed)
 

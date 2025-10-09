@@ -80,24 +80,37 @@ fn main() -> Result<(), String> {
         4, // level_max
     );
 
-    // subdivide three times to create an imbalance
+    // subdivide four times to create an unbalanced quadtree
     println!("Creating an unbalanced tree...");
-    tree_2.subdivide(); // L1
-    let ne_l1 = match &mut tree_2.node {
+
+    tree_2.subdivide(); // L0 -> L1
+    // Get the NE child
+    let ne = match &mut tree_2.node {
         Node::Children { ne, .. } => ne,
-        _ => panic!("Tree should have children after subdivide"),
+        _ => panic!("L1 NE child should exist."),
     };
-    ne_l1.subdivide(); // L2
-    let ne_sw_l2 = match &mut ne_l1.node {
+
+    ne.subdivide(); // L1 -> L2
+    // Get the NE_SW child
+    let ne_sw = match &mut ne.node {
         Node::Children { sw, .. } => sw,
-        _ => panic!("NE child should have L2 children"),
+        _ => panic!("L2 NE_SW child exist."),
     };
-    ne_sw_l2.subdivide(); // L3
+
+    ne_sw.subdivide(); // L2 -> L3
+    // Get the NE_SW_SW child
+    let ne_sw_sw = match &mut ne_sw.node {
+        Node::Children { sw, .. } => sw,
+        _ => panic!("L3 NW_SW_SW child should exist."),
+    };
+
+    ne_sw_sw.subdivide(); // L3 -> L4
+
     println!("Unbalanced tree created.");
 
     // Visualize the unbalanced tree
     println!("\nVisualizing quadtree BEFORE balancing...");
-    if let Err(e) = tree_2.visualize(&scratch_path_str, "example_2_before_balance") {
+    if let Err(e) = tree_2.visualize(&scratch_path_str, "example_2_unbalanced") {
         eprintln!("Visualization failed: {}", e);
     }
 
@@ -108,7 +121,7 @@ fn main() -> Result<(), String> {
 
     // Visualize the balanced tree
     println!("\nVisualizing quadtree AFTER balancing...");
-    if let Err(e) = tree_2.visualize(&scratch_path_str, "example_2_after_balance") {
+    if let Err(e) = tree_2.visualize(&scratch_path_str, "example_2_weakly_balanced") {
         eprintln!("Visualization filed: {}", e);
     }
 
