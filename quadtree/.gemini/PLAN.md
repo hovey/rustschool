@@ -86,6 +86,7 @@ This feature is now implemented. A `weak_balance` function was added that iterat
 - [x] **Add Tests**: Created and debugged a unit test (`test_weak_balance`) that manually constructs an unbalanced tree and asserts that it is correctly balanced.
 - [x] **Add Visualization**: Updated `main.rs` to visualize the before-and-after state of the tree when `weak_balance` is called, demonstrating the feature.
 - [x] **Debug and Refine Balancing**: Iteratively debugged the weak balancing implementation, fixing two subtle bugs related to corner-adjacency being incorrectly treated as face-adjacency. This ensured the balancing algorithm is both correct and robust.
+- [x] **Add Regression Test for Corner Adjacency**: Added a new integration test (`test_weak_balance_no_unnecessary_corner_refinement`) that specifically validates the correct balancing behavior for complex corner-adjacent cases, preventing future regressions.
 
 ### 2. Implement Strong Balancing (Next Steps)
 
