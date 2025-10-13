@@ -80,11 +80,12 @@ This phase focuses on implementing standard balancing conditions to ensure the q
 This feature is now implemented. A `weak_balance` function was added that iteratively subdivides leaves until the 2:1 balance condition is met. The implementation involved adding several helper functions for neighbor finding and tree traversal.
 
 - [x] **Create `weak_balance` function**: Implemented as a post-processing step that operates in a loop.
-- [x] **Implement Neighbor Finding**: Created `face_neighbors` and a recursive helper `find_leaves_in_bounds` to find adjacent leaves. Added an `intersects` method to `Rectangle` to support this.
+- [x] **Implement Neighbor Finding**: Implemented a robust, traversal-based `face_neighbors` function. This approach uses recursive helpers (`find_neighbors_recursive` and `get_leaves_on_edge`) to find adjacent leaves by walking the tree's structure, avoiding geometric intersection tests.
 - [x] **Implement Balancing Pass**: Created `balance_pass_weakly` which traverses the tree, finds imbalances, and collects nodes for subdivision using raw pointers in a `HashSet`.
 - [x] **Subdivide Unbalanced Leaves**: Implemented `subdivide_leaves_by_pointer` to perform the subdivisions identified in the balancing pass.
 - [x] **Add Tests**: Created and debugged a unit test (`test_weak_balance`) that manually constructs an unbalanced tree and asserts that it is correctly balanced.
 - [x] **Add Visualization**: Updated `main.rs` to visualize the before-and-after state of the tree when `weak_balance` is called, demonstrating the feature.
+- [x] **Debug and Refine Balancing**: Iteratively debugged the weak balancing implementation, fixing two subtle bugs related to corner-adjacency being incorrectly treated as face-adjacency. This ensured the balancing algorithm is both correct and robust.
 
 ### 2. Implement Strong Balancing (Next Steps)
 

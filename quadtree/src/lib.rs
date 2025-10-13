@@ -416,7 +416,7 @@ impl Quadtree {
                     Direction::North => {
                         if !target_is_in_north && target_boundary.origin.y + target_boundary.height == center_y {
                             let northern_child = if target_is_in_west { nw } else { ne };
-                            northern_child.get_leaves_on_edge(Direction::South)
+                            northern_child.get_leaves_on_edge(Direction::South, target_boundary)
                         } else {
                             child_to_search.find_neighbors_recursive(target_boundary, direction)
                         }
@@ -424,7 +424,7 @@ impl Quadtree {
                     Direction::South => {
                         if target_is_in_north && target_boundary.origin.y == center_y {
                             let southern_child = if target_is_in_west { sw } else { se };
-                            southern_child.get_leaves_on_edge(Direction::North)
+                            southern_child.get_leaves_on_edge(Direction::North, target_boundary)
                         } else {
                             child_to_search.find_neighbors_recursive(target_boundary, direction)
                         }
@@ -432,7 +432,7 @@ impl Quadtree {
                     Direction::East => {
                         if target_is_in_west && target_boundary.origin.x + target_boundary.width == center_x {
                             let eastern_child = if target_is_in_north { ne } else { se };
-                            eastern_child.get_leaves_on_edge(Direction::West)
+                            eastern_child.get_leaves_on_edge(Direction::West, target_boundary)
                         } else {
                             child_to_search.find_neighbors_recursive(target_boundary, direction)
                         }
@@ -440,7 +440,7 @@ impl Quadtree {
                     Direction::West => {
                         if !target_is_in_west && target_boundary.origin.x == center_x {
                             let western_child = if target_is_in_north { nw } else { sw };
-                            western_child.get_leaves_on_edge(Direction::East)
+                            western_child.get_leaves_on_edge(Direction::East, target_boundary)
                         } else {
                             child_to_search.find_neighbors_recursive(target_boundary, direction)
                         }
@@ -451,32 +451,53 @@ impl Quadtree {
     }
 
     /// Helper function to get all leaves on a specific edge of a quadtree node.
-    fn get_leaves_on_edge<'a>(&'a self, edge: Direction) -> Vec<&'a Quadtree> {
+    fn get_leaves_on_edge<'a>(&'a self, edge: Direction, target_boundary: &Rectangle) -> Vec<&'a Quadtree> {
+        // First, check for intersection in the transverse driection.
+        // For West/East edge, check for y-overlap.
+        // For North/South edge, check x-overlap.
+        let intersects = match edge {
+            Direction::East | Direction::West => {
+                // y-overlap check
+                self.boundary.origin.y < target_boundary.origin.y + target_boundary.height
+                    && self.boundary.origin.y + self.boundary.height > target_boundary.origin.y
+            }
+            Direction::North | Direction::South => {
+                // x-overlap check
+                self.boundary.origin.x < target_boundary.origin.x + target_boundary.width
+                    && self.boundary.origin.x + self.boundary.width > target_boundary.origin.x
+            }
+        };
+
+        if !intersects {
+            return vec![];  // No overlap, so no neighbors in this branch.
+        }
+
+        // If there is overlap, proceed with finding the leaves on the edge
         match &self.node {
             Node::Leaf { .. } => vec![self],
             Node::Children { nw, ne, sw, se } => match edge {
                 Direction::North => {
                     // Collect 'north' from nw and ne
-                    let mut leaves = nw.get_leaves_on_edge(edge);
-                    leaves.extend(ne.get_leaves_on_edge(edge));
+                    let mut leaves = nw.get_leaves_on_edge(edge, target_boundary);
+                    leaves.extend(ne.get_leaves_on_edge(edge, target_boundary));
                     leaves
                 }
                 Direction::East => {
                     // Collect 'east' from ne and se
-                    let mut leaves = ne.get_leaves_on_edge(edge);
-                    leaves.extend(se.get_leaves_on_edge(edge));
+                    let mut leaves = ne.get_leaves_on_edge(edge, target_boundary);
+                    leaves.extend(se.get_leaves_on_edge(edge, target_boundary));
                     leaves
                 }
                 Direction::South => {
                     // Collect 'south' from sw and se
-                    let mut leaves = sw.get_leaves_on_edge(edge);
-                    leaves.extend(se.get_leaves_on_edge(edge));
+                    let mut leaves = sw.get_leaves_on_edge(edge, target_boundary);
+                    leaves.extend(se.get_leaves_on_edge(edge, target_boundary));
                     leaves
                 }
                 Direction::West => {
                     // Collect 'west' from nw and sw
-                    let mut leaves = nw.get_leaves_on_edge(edge);
-                    leaves.extend(sw.get_leaves_on_edge(edge));
+                    let mut leaves = nw.get_leaves_on_edge(edge, target_boundary);
+                    leaves.extend(sw.get_leaves_on_edge(edge, target_boundary));
                     leaves
                 }
             }
