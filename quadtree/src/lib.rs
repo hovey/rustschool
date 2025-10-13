@@ -49,6 +49,15 @@ pub struct Quadtree {
     pub node: Node,
 }
 
+/// A cardinal direction to search for face neighbors, to the north, east, south, west
+#[derive(Clone, Copy, Debug)]
+enum Direction {
+    North,
+    East,
+    South,
+    West,
+}
+
 impl Rectangle {
     /// Checks if a point is within the rectangle's boundary.
     ///
@@ -59,14 +68,15 @@ impl Rectangle {
             && point.y >= self.origin.y
             && point.y < self.origin.y + self.height
     }
-    // Checks if this rectangle intersects with another rectangle.
-    pub fn intersects(&self, other: &Rectangle) -> bool {
-        // No intersection if one rectangle is entirely to side of the other
-        !(self.origin.x > other.origin.x + other.width
-            || self.origin.x + self.width < other.origin.x
-            || self.origin.y > other.origin.y + other.height
-            || self.origin.y + self.height < other.origin.y)
-    }
+    // // No longer needed
+    // // Checks if this rectangle intersects with another rectangle.
+    // pub fn intersects(&self, other: &Rectangle) -> bool {
+    //     // No intersection if one rectangle is entirely to side of the other
+    //     !(self.origin.x > other.origin.x + other.width
+    //         || self.origin.x + self.width < other.origin.x
+    //         || self.origin.y > other.origin.y + other.height
+    //         || self.origin.y + self.height < other.origin.y)
+    // }
 }
 
 impl Quadtree {
@@ -295,7 +305,7 @@ impl Quadtree {
         use std::collections::HashSet;
 
         // We collect immutable leaves first, find neighbors that need subdivision,
-        // and hten will later re-aquire mutable referneces to subdivide them.
+        // and then will later re-aquire mutable referneces to subdivide them.
         let leaves = self.get_all_leaves();
         let mut to_subdivide = HashSet::new();
 
@@ -346,92 +356,131 @@ impl Quadtree {
         }
     }
 
-    /// Recursively finds all leaves that intersect with a given search area.
-    fn find_leaves_in_bounds<'a>(
-        &'a self,
-        search_area: &Rectangle,
-        found_leaves: &mut Vec<&'a Quadtree>,
-    ) {
-        if !self.boundary.intersects(search_area) {
-            return;
-        }
+    // /// Recursively finds all leaves that intersect with a given search area.
+    // fn find_leaves_in_bounds<'a>(
+    //     &'a self,
+    //     search_area: &Rectangle,
+    //     found_leaves: &mut Vec<&'a Quadtree>,
+    // ) {
+    //     if !self.boundary.intersects(search_area) {
+    //         return;
+    //     }
 
+    //     match &self.node {
+    //         Node::Leaf { .. } => {
+    //             found_leaves.push(self);
+    //         }
+    //         Node::Children { nw, ne, sw, se } => {
+    //             nw.find_leaves_in_bounds(search_area, found_leaves);
+    //             ne.find_leaves_in_bounds(search_area, found_leaves);
+    //             sw.find_leaves_in_bounds(search_area, found_leaves);
+    //             se.find_leaves_in_bounds(search_area, found_leaves);
+    //         }
+    //     }
+    // }
+
+    /// Finds all leaf nodes that share a face (edge) with a given boundary.
+    /// This is the new, traversal-based implementation.
+    fn face_neighbors<'a>(&'a self, leaf_boundary: &Rectangle) -> Vec<&'a Quadtree> {
+        let mut neighbors = Vec::new();
+        neighbors.extend(self.find_neighbors_recursive(leaf_boundary, Direction::North));
+        neighbors.extend(self.find_neighbors_recursive(leaf_boundary, Direction::East));
+        neighbors.extend(self.find_neighbors_recursive(leaf_boundary, Direction::South));
+        neighbors.extend(self.find_neighbors_recursive(leaf_boundary, Direction::West));
+        neighbors
+    }
+
+    /// Recursively finds adjacent leaves in a specific direction using tree traversal.
+    fn find_neighbors_recursive<'a>(
+        &'a self,
+        target_boundary: &Rectangle,
+        direction: Direction,
+    ) -> Vec<&'a Quadtree> {
         match &self.node {
-            Node::Leaf { .. } => {
-                found_leaves.push(self);
-            }
+            Node::Leaf { .. } => vec![], // Base case, cannot descend further
             Node::Children { nw, ne, sw, se } => {
-                nw.find_leaves_in_bounds(search_area, found_leaves);
-                ne.find_leaves_in_bounds(search_area, found_leaves);
-                sw.find_leaves_in_bounds(search_area, found_leaves);
-                se.find_leaves_in_bounds(search_area, found_leaves);
+                let center_x = self.boundary.origin.x + self.boundary.width / 2.0;
+                let center_y = self.boundary.origin.y + self.boundary.height / 2.0;
+
+                // Determine which child the target boundary is in.
+                let target_is_in_north = target_boundary.origin.y >= center_y;
+                let target_is_in_west = target_boundary.origin.x < center_x;
+
+                let child_to_search = if target_is_in_north {
+                    if target_is_in_west { nw } else { ne }
+                } else {
+                    if target_is_in_west { sw } else { se }
+                };
+
+                match direction {
+                    Direction::North => {
+                        if !target_is_in_north && target_boundary.origin.y + target_boundary.height == center_y {
+                            let northern_child = if target_is_in_west { nw } else { ne };
+                            northern_child.get_leaves_on_edge(Direction::South)
+                        } else {
+                            child_to_search.find_neighbors_recursive(target_boundary, direction)
+                        }
+                    }
+                    Direction::South => {
+                        if target_is_in_north && target_boundary.origin.y == center_y {
+                            let southern_child = if target_is_in_west { sw } else { se };
+                            southern_child.get_leaves_on_edge(Direction::North)
+                        } else {
+                            child_to_search.find_neighbors_recursive(target_boundary, direction)
+                        }
+                    }
+                    Direction::East => {
+                        if target_is_in_west && target_boundary.origin.x + target_boundary.width == center_x {
+                            let eastern_child = if target_is_in_north { ne } else { se };
+                            eastern_child.get_leaves_on_edge(Direction::West)
+                        } else {
+                            child_to_search.find_neighbors_recursive(target_boundary, direction)
+                        }
+                    }
+                    Direction::West => {
+                        if !target_is_in_west && target_boundary.origin.x == center_x {
+                            let western_child = if target_is_in_north { nw } else { sw };
+                            western_child.get_leaves_on_edge(Direction::East)
+                        } else {
+                            child_to_search.find_neighbors_recursive(target_boundary, direction)
+                        }
+                    }
+                }
             }
         }
     }
 
-    /// Finds all leaf nodes that share a face (edge) with a given boundary.
-    ///
-    /// This function queries the tree from the root to find neighbors to the
-    /// North, South, East, and West of the specified rectangular area.
-    ///
-    /// # Arguments
-    ///
-    /// * `leaf_boundary` - The boundary of the leaf for which to find neighbors.
-    ///
-    /// # Returns
-    ///
-    /// A vector of references to the neighboring leaf quadtrees.
-    fn face_neighbors<'a>(&'a self, leaf_boundary: &Rectangle) -> Vec<&'a Quadtree> {
-        let mut neighbors = Vec::new();
-        // A small epsilon helps robustly find neighbors by creating a thin search
-        // rectangle that slightly overlaps the boundary edge.
-        let epsilon = 0.0001 * leaf_boundary.width;
-
-        // North neighbor search area
-        let north_search = Rectangle {
-            origin: Point {
-                x: leaf_boundary.origin.x,
-                y: leaf_boundary.origin.y + leaf_boundary.height,
-            },
-            width: leaf_boundary.width,
-            height: epsilon,
-        };
-        self.find_leaves_in_bounds(&north_search, &mut neighbors);
-
-        // South neighbor search area
-        let south_search = Rectangle {
-            origin: Point {
-                x: leaf_boundary.origin.x,
-                y: leaf_boundary.origin.y - epsilon,
-            },
-            width: leaf_boundary.width,
-            height: epsilon,
-        };
-        self.find_leaves_in_bounds(&south_search, &mut neighbors);
-
-        // East neighbor search area
-        let east_search = Rectangle {
-            origin: Point {
-                x: leaf_boundary.origin.x + leaf_boundary.width,
-                y: leaf_boundary.origin.y,
-            },
-            width: epsilon,
-            height: leaf_boundary.height,
-        };
-        self.find_leaves_in_bounds(&east_search, &mut neighbors);
-
-        // West neighbor search area
-        let west_search = Rectangle {
-            origin: Point {
-                x: leaf_boundary.origin.x - epsilon,
-                y: leaf_boundary.origin.y,
-            },
-            width: epsilon,
-            height: leaf_boundary.height,
-        };
-        self.find_leaves_in_bounds(&west_search, &mut neighbors);
-
-        neighbors
+    /// Helper function to get all leaves on a specific edge of a quadtree node.
+    fn get_leaves_on_edge<'a>(&'a self, edge: Direction) -> Vec<&'a Quadtree> {
+        match &self.node {
+            Node::Leaf { .. } => vec![self],
+            Node::Children { nw, ne, sw, se } => match edge {
+                Direction::North => {
+                    // Collect 'north' from nw and ne
+                    let mut leaves = nw.get_leaves_on_edge(edge);
+                    leaves.extend(ne.get_leaves_on_edge(edge));
+                    leaves
+                }
+                Direction::East => {
+                    // Collect 'east' from ne and se
+                    let mut leaves = ne.get_leaves_on_edge(edge);
+                    leaves.extend(se.get_leaves_on_edge(edge));
+                    leaves
+                }
+                Direction::South => {
+                    // Collect 'south' from sw and se
+                    let mut leaves = sw.get_leaves_on_edge(edge);
+                    leaves.extend(se.get_leaves_on_edge(edge));
+                    leaves
+                }
+                Direction::West => {
+                    // Collect 'west' from nw and sw
+                    let mut leaves = nw.get_leaves_on_edge(edge);
+                    leaves.extend(sw.get_leaves_on_edge(edge));
+                    leaves
+                }
+            }
+        }
     }
 
     pub fn to_yaml(&self) -> Result<String, serde_yaml::Error> {

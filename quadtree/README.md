@@ -168,7 +168,7 @@ The **balance constraint** is stated as,
 
 **"Leaf cell" specification**: The balance constraint applies only to a leaf node in the quadtree, not to internal nodes that have children.
 
-## Example 2: 
+## Example 2: Manual Subdivision
 
 This example uses the `Quadtree` method: `subdivide`, `weak_balance`, and `strong_balance`.
 We recreate the **weakly balanced** quadtree example from [Pitzalis 2021](https://dl.acm.org/doi/pdf/10.1145/3478513.3480508), shown below:
@@ -220,15 +220,20 @@ let ne_sw_sw = match &mut ne_sw.node {
 ne_sw_sw.subdivide(); // L3 -> L4
 ```
 
-The **unbalanced** (left) and (? - bug) **weakly balanced** (right) quadtrees are shown below:
+The **unbalanced** (left) and **weakly balanced** (right) quadtrees are shown below:
 
-unbalanced | weakly balanced (? - bug)
+unbalanced | weakly balanced
 :---: | :---:
-![quadtree_data_example_2_unbalanced](img/quadtree_data_example_2_unbalanced.png) | ![quadtree_data_example_2_weakly_balanced](img/quadtree_data_example_2_weakly_balanced.png)
+![quadtree_data_example_2_before_balancing](img/quadtree_data_example_2_before_balancing.png) | ![quadtree_data_example_2_weakly_balanced](img/quadtree_data_example_2_weakly_balanced.png)
 
-The weakly balanced currently has a bug:  The red `SW_NE` level 2 (green) should not be refined to level 3 (red).
-It appears this last tree is actually *strongly* balanced by accident (for now).
+## Example 1 (revisited) for Weakly Balancing
 
-### Example: Strongly Balanced Quadtree
+The *Example 1* **unbalanced** (left) and **weakly balanced** (right) quadtrees are shown below:
+
+unbalanced | weakly balanced
+:---: | :---:
+![quadtree_data_example_1_before_balancing](img/quadtree_data_example_1_before_balancing.png) | ![quadtree_data_example_1_weakly_balanced](img/quadtree_data_example_1_weakly_balanced.png)
+
+## Example 3: Strongly Balanced Quadtree
 
 To come.

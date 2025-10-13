@@ -50,7 +50,7 @@ fn main() -> Result<(), String> {
 
     // Visualize the unbalanced tree
     println!("\nVisualizing quadtree BEFORE balancing...");
-    if let Err(e) = tree_1.visualize(&scratch_path_str, "example_1_before_balance") {
+    if let Err(e) = tree_1.visualize(&scratch_path_str, "example_1_before_balancing") {
         eprintln!("Visualization failed: {}", e);
     }
 
@@ -61,7 +61,7 @@ fn main() -> Result<(), String> {
 
     // Visualize the balanced tree
     println!("\nVisualizing quadtree AFTER balancing...");
-    if let Err(e) = tree_1.visualize(&scratch_path_str, "example_1_after_balance") {
+    if let Err(e) = tree_1.visualize(&scratch_path_str, "example_1_weakly_balanced") {
         eprintln!("Visualization filed: {}", e);
     }
 
@@ -110,7 +110,7 @@ fn main() -> Result<(), String> {
 
     // Visualize the unbalanced tree
     println!("\nVisualizing quadtree BEFORE balancing...");
-    if let Err(e) = tree_2.visualize(&scratch_path_str, "example_2_unbalanced") {
+    if let Err(e) = tree_2.visualize(&scratch_path_str, "example_2_before_balancing") {
         eprintln!("Visualization failed: {}", e);
     }
 
