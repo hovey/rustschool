@@ -8,16 +8,16 @@ use std::process::Command;
 /// Represents a point in 2D space.
 #[derive(Debug, Clone, PartialEq, Serialize)]
 pub struct Point {
-    pub x: f32,
-    pub y: f32,
+    pub x: f64,
+    pub y: f64,
 }
 
 /// Represents an axis-aligned rectangular boundary.
 #[derive(Debug, Clone, PartialEq, Serialize)]
 pub struct Rectangle {
     pub origin: Point,
-    pub width: f32,
-    pub height: f32,
+    pub width: f64,
+    pub height: f64,
 }
 
 /// Represents the state of a quadtree node.
@@ -407,14 +407,24 @@ impl Quadtree {
                 let target_is_in_west = target_boundary.origin.x < center_x;
 
                 let child_to_search = if target_is_in_north {
-                    if target_is_in_west { nw } else { ne }
+                    if target_is_in_west {
+                        nw
+                    } else {
+                        ne
+                    }
                 } else {
-                    if target_is_in_west { sw } else { se }
+                    if target_is_in_west {
+                        sw
+                    } else {
+                        se
+                    }
                 };
 
                 match direction {
                     Direction::North => {
-                        if !target_is_in_north && target_boundary.origin.y + target_boundary.height == center_y {
+                        if !target_is_in_north
+                            && target_boundary.origin.y + target_boundary.height == center_y
+                        {
                             let northern_child = if target_is_in_west { nw } else { ne };
                             northern_child.get_leaves_on_edge(Direction::South, target_boundary)
                         } else {
@@ -430,7 +440,9 @@ impl Quadtree {
                         }
                     }
                     Direction::East => {
-                        if target_is_in_west && target_boundary.origin.x + target_boundary.width == center_x {
+                        if target_is_in_west
+                            && target_boundary.origin.x + target_boundary.width == center_x
+                        {
                             let eastern_child = if target_is_in_north { ne } else { se };
                             eastern_child.get_leaves_on_edge(Direction::West, target_boundary)
                         } else {
@@ -451,7 +463,11 @@ impl Quadtree {
     }
 
     /// Helper function to get all leaves on a specific edge of a quadtree node.
-    fn get_leaves_on_edge<'a>(&'a self, edge: Direction, target_boundary: &Rectangle) -> Vec<&'a Quadtree> {
+    fn get_leaves_on_edge<'a>(
+        &'a self,
+        edge: Direction,
+        target_boundary: &Rectangle,
+    ) -> Vec<&'a Quadtree> {
         // First, check for intersection in the transverse driection.
         // For West/East edge, check for y-overlap.
         // For North/South edge, check x-overlap.
@@ -469,7 +485,7 @@ impl Quadtree {
         };
 
         if !intersects {
-            return vec![];  // No overlap, so no neighbors in this branch.
+            return vec![]; // No overlap, so no neighbors in this branch.
         }
 
         // If there is overlap, proceed with finding the leaves on the edge
@@ -500,7 +516,7 @@ impl Quadtree {
                     leaves.extend(sw.get_leaves_on_edge(edge, target_boundary));
                     leaves
                 }
-            }
+            },
         }
     }
 

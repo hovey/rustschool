@@ -56,7 +56,12 @@ fn test_weak_balance_no_unnecessary_corner_refinement() {
         Node::Children { nw, se, .. } => {
             // Check the nw quadrant's children
             match &nw.node {
-                Node::Children { nw: _nw_nw, ne: nw_ne, sw: _nw_sw, se: nw_se } => {
+                Node::Children {
+                    nw: _nw_nw,
+                    ne: nw_ne,
+                    sw: _nw_sw,
+                    se: nw_se,
+                } => {
                     // nw_ne is not face-adjacent to the deepest refinement. It should remain a leaf.
                     assert!(
                         matches!(nw_ne.node, Node::Leaf { .. }),
@@ -74,7 +79,12 @@ fn test_weak_balance_no_unnecessary_corner_refinement() {
 
             // Check the se quadrant's children
             match &se.node {
-                Node::Children { nw: se_nw, ne: se_ne, sw: _se_sw, se: _se_se } => {
+                Node::Children {
+                    nw: se_nw,
+                    ne: se_ne,
+                    sw: _se_sw,
+                    se: _se_se,
+                } => {
                     // se_ne is not face-adjacent to the deepest refinement. It should remain a leaf.
                     assert!(
                         matches!(se_ne.node, Node::Leaf { .. }),

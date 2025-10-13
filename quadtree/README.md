@@ -234,6 +234,16 @@ unbalanced | weakly balanced
 :---: | :---:
 ![quadtree_data_example_1_before_balancing](img/quadtree_data_example_1_before_balancing.png) | ![quadtree_data_example_1_weakly_balanced](img/quadtree_data_example_1_weakly_balanced.png)
 
-## Example 3: Strongly Balanced Quadtree
+## Example 3: Circle
+
+We place a circle of points at radius 1.0 to create a circle, and then use point-stimulated refinement.
+
+The *Example 3* **unbalanced** (left) and **weakly balanced** (right) quadtrees are shown below:
+
+unbalanced | weakly balanced
+:---: | :---:
+![quadtree_data_example_3_before_balancing](img/quadtree_data_example_3_before_balancing.png) | ![quadtree_data_example_3_weakly_balanced](img/quadtree_data_example_3_weakly_balanced.png)
+
+## Example $n$: Strongly Balanced Quadtree
 
 To come.
