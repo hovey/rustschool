@@ -88,7 +88,16 @@ This feature is now implemented. A `weak_balance` function was added that iterat
 - [x] **Debug and Refine Balancing**: Iteratively debugged the weak balancing implementation, fixing two subtle bugs related to corner-adjacency being incorrectly treated as face-adjacency. This ensured the balancing algorithm is both correct and robust.
 - [x] **Add Regression Test for Corner Adjacency**: Added a new integration test (`test_weak_balance_no_unnecessary_corner_refinement`) that specifically validates the correct balancing behavior for complex corner-adjacent cases, preventing future regressions.
 
-### 2. Implement Strong Balancing (Next Steps)
+### 2. Implement Primal Meshing Strategy (TODO)
+
+This phase involves implementing a primal meshing scheme by decomposing larger cells that have hanging nodes on their boundaries. The decomposition will follow specific templates, such as the one described in the Sandia SIBL project, to create a high-quality, hex-dominant-style mesh.
+
+- [ ] **Define Hanging Node Templates**: Research and define the specific geometric templates for decomposing cells with 2, 3, and 4 hanging nodes, based on the SIBL "primal" strategy.
+- [ ] **Implement Hanging Node Detection**: Create a function to iterate through all leaf cells and, for each, identify the number and location of hanging nodes on its boundary.
+- [ ] **Implement Template Application**: Write a function that takes a cell and its hanging node configuration and generates the appropriate internal diagonal lines based on the defined templates.
+- [ ] **Add Visualization**: Update the visualization script to draw the generated primal mesh lines.
+
+### 3. Implement Strong Balancing (Next Steps)
 
 A strongly balanced quadtree is stricter: any two leaf nodes that share an edge *or a vertex* cannot differ by more than one level of refinement.
 
