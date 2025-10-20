@@ -650,6 +650,45 @@ impl Quadtree {
         }
     }
 
+    /// Returns teh center point of a quadtree's boundary.
+    fn center(&self) -> Point {
+        Point {
+            x: self.boundary.origin.x + self.boundary.width / 2.0,
+            y: self.boundary.origin.y + self.boundary.height / 2.0,
+        }
+    }
+
+    /// Computes the dual edges for auniform parts of the quadtree.
+    /// 
+    /// A dual edge connects the centers (dual vertices) of two adjacent
+    /// leaf cells that are at the same level of refinement.  This function
+    /// does not handle connections for adaptive parts of the grid (where
+    /// hanging nodes exist).
+    /// 
+    /// # Returns
+    /// 
+    /// A `Vec<(Point, Point)>` representing the dual edges.
+    pub fn dual_edges(&self) -> Vec<(Point, Point)> {
+        let mut edges = Vec::new();
+        let leaves = self.get_all_leaves();
+
+        for leaf in &leaves {
+            // Find neighbors to the East and South to avoid generating duplicate edges.
+            let neighbors_east = self.find_neighbors_recursive(&leaf.boundary, Direction::East);
+            let neighbors_south = self.find_neighbors_recursive(&leaf.boundary, Direction::South);
+            
+            for neighbor in neighbors_east.iter().chain(neighbors_south.iter()) {
+                // Only create an edge if the neighbor is a the same refinement level.
+                if leaf.level == neighbor.level {
+                    let p1 = leaf.center();
+                    let p2 = neighbor.center();
+                    edges.push((p1, p2));
+                }
+            }
+        }
+        edges
+    }
+
     pub fn to_yaml(&self) -> Result<String, serde_yaml::Error> {
         serde_yaml::to_string(self)
     }
