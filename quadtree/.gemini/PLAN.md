@@ -117,11 +117,11 @@ This section outlines the algorithm for identifying hanging nodes and processing
 
 A "hanging edge" is an edge of a cell that has one or more vertices of adjacent, smaller cells lying on it. The goal is to produce a list of these hanging edges.
 
-- **[x] Create a recursive traversal function.**
-- **[x] Process internal boundaries.**
-- **[x] Compare refinement levels.**
-- **[x] Store the results in a structured way.**
-- **[x] Recurse to deeper levels.**
+- [x] **Create a recursive traversal function.**
+- [x] **Process internal boundaries.**
+- [x] **Compare refinement levels.**
+- [x] **Store the results in a structured way.**
+- [x] **Recurse to deeper levels.**
 
 #### Stage 2: "Pairing" the Hanging Nodes
 
@@ -150,14 +150,21 @@ This step connects the dual vertices generated in the previous step, but only fo
 - [x] **Connect Centers of Same-Level Neighbors**.
 - [x] **Return Edges**.
 
-### 3. Implement Dual Edge Generation (Adaptive Case) (TODO)
+### 3. Implement Dual Edge Generation (Adaptive Case) (Completed)
 
-This step will handle the generation of dual edges where quadtree cells of different refinement levels meet.
+This step handles the generation of dual edges where quadtree cells of different refinement levels meet.
 
-- [ ] **Refactor `HangingEdge` struct**:
-  - Add a `coarse_cell_center: Point` field to the struct to make it more informative.
-- [ ] **Update `find_interface_hanging_edge` function**:
-  - Modify the function to correctly populate the new `coarse_cell_center` field.
-- [ ] **Extend `dual_edges` function**:
-  - Add logic to process the `HangingEdge` list.
-  - For each hanging edge, generate the "transition" edges that connect the coarse cell's center to the hanging node(s) on its boundary.
+- [x] **Refactor `HangingEdge` struct**.
+- [x] **Update `find_interface_hanging_edge` function**.
+- [x] **Extend `dual_edges` function**.
+
+### 4. Complete Dual Mesh Connectivity (TODO)
+
+This final step completes the dual mesh by connecting the hanging nodes to the centers of their adjacent fine-level cells.
+
+- [ ] **Create `find_leaves_at_point` helper**:
+  - Implement a new recursive helper function that, given a `Point`, finds all leaf cells that have that point as one of their corners.
+- [ ] **Finalize `dual_edges` function**:
+  - Extend the `dual_edges` function's logic.
+  - After creating the edge from a coarse cell center to a hanging node, use the new helper to find the adjacent fine-level leaves.
+  - Create the final edges connecting the hanging node to the center of each of those fine-level leaves.

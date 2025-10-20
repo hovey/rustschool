@@ -64,6 +64,8 @@ enum Direction {
 /// of adjacent, smaller cells lying on it.
 #[derive(Debug, PartialEq, Serialize, Clone)]
 pub struct HangingEdge {
+    /// The center of the coarse cell that this edge belongs to.
+    pub coarse_cell_center: Point,
     /// The first vertex of the coarse edge.
     pub v1: Point,
     /// The second vertex of the coarse edge.
@@ -587,6 +589,7 @@ impl Quadtree {
                     y: (v1.y + v2.y) / 2.0,
                 };
                 Some(HangingEdge {
+                    coarse_cell_center: node1.center(),
                     v1,
                     v2,
                     hanging_nodes: vec![hanging_node],
@@ -605,6 +608,7 @@ impl Quadtree {
                     y: (v1.y + v2.y) / 2.0,
                 };
                 Some(HangingEdge {
+                    coarse_cell_center: node2.center(),
                     v1,
                     v2,
                     hanging_nodes: vec![hanging_node],
@@ -658,25 +662,22 @@ impl Quadtree {
         }
     }
 
-    /// Computes the dual edges for auniform parts of the quadtree.
-    /// 
-    /// A dual edge connects the centers (dual vertices) of two adjacent
-    /// leaf cells that are at the same level of refinement.  This function
-    /// does not handle connections for adaptive parts of the grid (where
-    /// hanging nodes exist).
-    /// 
+    /// Computes the dual edges for the entire quadtree, handing both uniform
+    /// and adpative parts of the grid.
+    ///
     /// # Returns
-    /// 
+    ///
     /// A `Vec<(Point, Point)>` representing the dual edges.
     pub fn dual_edges(&self) -> Vec<(Point, Point)> {
         let mut edges = Vec::new();
         let leaves = self.get_all_leaves();
 
+        // 1. Add edges of same-level neighbors.
         for leaf in &leaves {
             // Find neighbors to the East and South to avoid generating duplicate edges.
             let neighbors_east = self.find_neighbors_recursive(&leaf.boundary, Direction::East);
             let neighbors_south = self.find_neighbors_recursive(&leaf.boundary, Direction::South);
-            
+
             for neighbor in neighbors_east.iter().chain(neighbors_south.iter()) {
                 // Only create an edge if the neighbor is a the same refinement level.
                 if leaf.level == neighbor.level {
@@ -686,6 +687,16 @@ impl Quadtree {
                 }
             }
         }
+
+        // 2. Add transition edges for adaptive regions using hanging edges.
+        let hanging_edges = self.hanging_edges();
+        for edge in hanging_edges {
+            for hanging_node in edge.hanging_nodes {
+                // Add edge from the coase cell's center to the hanging node.
+                edges.push((edge.coarse_cell_center.clone(), hanging_node));
+            }
+        }
+
         edges
     }
 
