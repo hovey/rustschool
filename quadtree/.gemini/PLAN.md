@@ -30,7 +30,7 @@ Use any useful literature and scholarly documents on quadtree definitions, formu
 }
 @inproceedings{marechal2009advances,
   title={Advances in octree-based all-hexahedral mesh generation: handling sharp features},
-  author={Mar{\'e}chal, Lo{\"i}c},
+  author={Maréchal, Loïc},
   booktitle={Proceedings of the 18th international meshing roundtable},
   pages={65--84},
   year={2009},
@@ -39,7 +39,7 @@ Use any useful literature and scholarly documents on quadtree definitions, formu
 }
 @article{marechal2016all,
   title={All hexahedral boundary layers generation},
-  author={Mar{\'e}chal, Lo{\"i}c},
+  author={Maréchal, Loïc},
   journal={Procedia engineering},
   volume={163},
   pages={5--19},
@@ -108,3 +108,47 @@ A strongly balanced quadtree is stricter: any two leaf nodes that share an edge 
 - [ ] **Implement Strong Balancing Pass**:
     - Adapt the balancing pass logic to use the new neighbor-finding function and enforce the stricter strong-balancing condition.
 - [ ] **Add Tests**: Create specific tests for strong balancing, particularly focusing on vertex-adjacent nodes.
+
+### 4. Identify and Pair Hanging Nodes (Next Steps)
+
+This section outlines the algorithm for identifying hanging nodes and processing them to facilitate mesh generation.
+
+#### Stage 1: Identify All "Hanging Edges"
+
+A "hanging edge" is an edge of a cell that has one or more vertices of adjacent, smaller cells lying on it. The goal is to produce a list of these hanging edges.
+
+- **[ ] Create a recursive traversal function.**
+  - This function will walk the quadtree and inspect the boundaries between cells (e.g., `find_hanging_edges_recursive`).
+
+- **[ ] Process internal boundaries.**
+  - Inside the recursive function, when encountering a `Node::Children`, check the four internal boundaries for differences in refinement level.
+
+- **[ ] Compare refinement levels.**
+  - For each boundary, if one adjacent cell is a `Leaf` and the other is `Children`, a hanging edge has been found.
+
+- **[ ] Store the results in a structured way.**
+  - When a hanging edge is found, store its properties in a custom struct:
+    ```rust
+    struct HangingEdge {
+        // The two vertices of the original, larger edge
+        v1: Point,
+        v2: Point,
+        // The node(s) that "hang" on this edge
+        hanging_nodes: Vec<Point>,
+    }
+    ```
+
+- **[ ] Recurse to deeper levels.**
+  - After checking the internal boundaries of a node, call the recursive function on its four children to find hanging edges at deeper levels.
+
+#### Stage 2: "Pairing" the Hanging Nodes
+
+"Pairing" the hanging nodes can be interpreted as creating new, smaller edges from the hanging edges identified in Stage 1.
+
+- **[ ] Process the `HangingEdge` list.**
+  - Iterate through the `Vec<HangingEdge>` generated in Stage 1.
+
+- **[ ] Create the pairs of new edges.**
+  - For each `HangingEdge`, use its original vertices (`v1`, `v2`) and the hanging node (`h`) to define two new, smaller edges:
+    - **Pair-Part 1:** The edge from `v1` to `h`.
+    - **Pair-Part 2:** The edge from `h` to `v2`.
