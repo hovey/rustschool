@@ -158,7 +158,19 @@ This step handles the generation of dual edges where quadtree cells of different
 - [x] **Update `find_interface_hanging_edge` function**.
 - [x] **Extend `dual_edges` function**.
 
-### 4. Complete Dual Mesh Connectivity (TODO)
+### 4. Add Dual Mesh Visualization (Completed)
+
+This step adds the capability to visualize the generated dual mesh (vertices and edges) as an overlay on the primal quadtree grid.
+
+- [x] **Update `visualize` function in Rust**:
+  - Added a `show_dual: bool` parameter.
+  - Created a `VisualizationData` struct to hold both quadtree and dual mesh data.
+  - Updated the function to serialize this new struct to YAML.
+- [x] **Update `visualize_quadtree.py` script**:
+  - Added `draw_dual_vertices` and `draw_dual_edges` functions.
+  - Updated the main script logic to parse the new YAML structure and call the new drawing functions.
+
+### 5. Complete Dual Mesh Connectivity (TODO)
 
 This final step completes the dual mesh by connecting the hanging nodes to the centers of their adjacent fine-level cells.
 

@@ -708,17 +708,42 @@ impl Quadtree {
     /// file to the `scratch_path`, then calls the Python script `visualize_quadtree.py`
     /// to read in the YAML file and visualize the quadtree using MATPLOTLIB, saving
     /// the figure the `scratch_path`.
-    pub fn visualize(&self, scratch_path: &str, file_suffix: &str) -> Result<(), String> {
-        let yaml_data = self
-            .to_yaml()
-            .map_err(|e| format!("Failed to serialize quadtree to YAML: {}", e))?;
+    pub fn visualize(
+        &self,
+        scratch_path: &str,
+        file_suffix: &str,
+        show_dual: bool,
+    ) -> Result<(), String> {
+        // Helper struct to hold all data for serialization.
+        #[derive(Serialize)]
+        struct VisualizationData<'a> {
+            quadtree: &'a Quadtree,
+            dual_vertices: Option<Vec<Point>>,
+            dual_edges: Option<Vec<(Point, Point)>>,
+        }
+
+        let mut viz_data = VisualizationData {
+            quadtree: self,
+            dual_vertices: None,
+            dual_edges: None,
+        };
+
+        if show_dual {
+            viz_data.dual_vertices = Some(self.dual_vertices());
+            viz_data.dual_edges = Some(self.dual_edges());
+        }
+
+        // let yaml_data = self
+        //     .to_yaml()
+        //     .map_err(|e| format!("Failed to serialize visualization data to YAML: {}", e))?;
+        let yaml_data = serde_yaml::to_string(&viz_data)
+            .map_err(|e| format!("Failed to serialize visualization data to YAML: {}", e))?;
 
         // println!("Generated YAML data:\n{}", yaml_data);
         println!("Generated YAML data for '{}'.", file_suffix);
 
         // Create a temporary YAML output file with the suffix
         let file_name = format!("quadtree_data_{}.yaml", file_suffix);
-
         let path_file_name = std::path::Path::new(scratch_path).join(&file_name);
         println!("Scratch YAML file path: {:?}", path_file_name);
 
@@ -728,7 +753,7 @@ impl Quadtree {
         file.write_all(yaml_data.as_bytes())
             .map_err(|e| format!("Failed to write YAML to temporary file: {}", e))?;
 
-        // Get the current working directory to find the PYthon script
+        // Get the current working directory to find the Python script
         let current_dir =
             env::current_dir().map_err(|e| format!("Failed to get current directory: {}", e))?;
 

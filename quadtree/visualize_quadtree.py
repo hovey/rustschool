@@ -82,6 +82,32 @@ def draw_quadtree(ax, node_data, colors, level=0):
         draw_quadtree(ax, children["se"], colors, level + 1)
 
 
+def draw_dual_vertices(ax, dual_vertices, color="black"):
+    """Draws the dual vertices on the quadtree visualization."""
+    if not dual_vertices:
+        return
+
+    x_coords = [p["x"] for p in dual_vertices]
+    y_coords = [p["y"] for p in dual_vertices]
+    ax.scatter(x_coords, y_coords, color=color, s=25, zorder=10, marker="o")
+
+
+def draw_dual_edges(ax, dual_edges, color="darkgray"):
+    """Draws the dual edges on the quadtree visualization."""
+    if not dual_edges:
+        return
+
+    for edge in dual_edges:
+        p1, p2 = edge
+        ax.plot(
+            [p1["x"], p2["x"]],
+            [p1["y"], p2["y"]],
+            color=color,
+            linewidth=1,
+            zorder=9,
+        )
+
+
 def main():
     """The main entry point for the script."""
     if len(sys.argv) < 2:
@@ -105,8 +131,7 @@ def main():
 
     try:
         with open(yaml_file_path, "r", encoding="utf8") as f:
-            # quadtree_data = yaml.safe_load(f)
-            quadtree_data = yaml.load(
+            viz_data = yaml.load(
                 f, Loader=yaml.FullLoader
             )  # needed to resolve custom tags
         print("Python successfully loaded YAML data.")
@@ -121,6 +146,7 @@ def main():
         )
         sys.exit(1)
 
+    quadtree_data = viz_data["quadtree"]
     _level_max = quadtree_data["level_max"]
 
     fig, ax = plt.subplots(figsize=(6.0, 6.0), dpi=dpi)
@@ -141,9 +167,14 @@ def main():
         root_boundary["origin"]["y"] + root_boundary["height"],
     )
 
+    # Draw the primary quadtree
     draw_quadtree(ax, quadtree_data, colors)
 
-    plt.title("Quadtree Visualization")
+    # Draw dual vertices and edges if they exist
+    draw_dual_vertices(ax, viz_data.get("dual_vertices"))
+    draw_dual_edges(ax, viz_data.get("dual_edges"))
+
+    # plt.title("Quadtree Visualization")
     # plt.title(f"level max = {level_max}")
     plt.title(f"{filename_stem}")
     plt.xlabel(r"$x$")

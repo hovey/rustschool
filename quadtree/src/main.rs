@@ -1,4 +1,3 @@
-// mod quadtree;  // Declare the quadtree module
 use dirs;
 use quadtree::*; // Bring all public items from quadtree into scope
 use std::f64::consts::PI;
@@ -51,7 +50,7 @@ fn point_stimulated_refinement(scratch_path_str: &str) -> Result<(), String> {
 
     // Visualize the unbalanced tree
     println!("\nVisualizing quadtree BEFORE balancing...");
-    if let Err(e) = tree.visualize(&scratch_path_str, "example_1_before_balancing") {
+    if let Err(e) = tree.visualize(&scratch_path_str, "example_1_before_balancing", false) {
         eprintln!("Visualization failed: {}", e);
     }
 
@@ -62,7 +61,7 @@ fn point_stimulated_refinement(scratch_path_str: &str) -> Result<(), String> {
 
     // Visualize the balanced tree
     println!("\nVisualizing quadtree AFTER balancing...");
-    if let Err(e) = tree.visualize(&scratch_path_str, "example_1_weakly_balanced") {
+    if let Err(e) = tree.visualize(&scratch_path_str, "example_1_weakly_balanced", false) {
         eprintln!("Visualization failed: {}", e);
     }
     Ok(())
@@ -114,7 +113,7 @@ fn manual_subdivision(scratch_path_str: &str) -> Result<(), String> {
 
     // Visualize the unbalanced tree
     println!("\nVisualizing quadtree BEFORE balancing...");
-    if let Err(e) = tree.visualize(&scratch_path_str, "example_2_before_balancing") {
+    if let Err(e) = tree.visualize(&scratch_path_str, "example_2_before_balancing", false) {
         eprintln!("Visualization failed: {}", e);
     }
 
@@ -125,7 +124,7 @@ fn manual_subdivision(scratch_path_str: &str) -> Result<(), String> {
 
     // Visualize the balanced tree
     println!("\nVisualizing quadtree AFTER balancing...");
-    if let Err(e) = tree.visualize(&scratch_path_str, "example_2_weakly_balanced") {
+    if let Err(e) = tree.visualize(&scratch_path_str, "example_2_weakly_balanced", false) {
         eprintln!("Visualization failed: {}", e);
     }
 
@@ -164,7 +163,7 @@ fn circle_with_balancing(scratch_path_str: &str) -> Result<(), String> {
 
     // Visualize the unbalanced tree
     println!("\nVisualizing quadtree BEFORE balancing...");
-    if let Err(e) = tree.visualize(&scratch_path_str, "example_3_before_balancing") {
+    if let Err(e) = tree.visualize(&scratch_path_str, "example_3_before_balancing", false) {
         eprintln!("Visualization failed: {}", e);
     }
 
@@ -175,7 +174,31 @@ fn circle_with_balancing(scratch_path_str: &str) -> Result<(), String> {
 
     // Visualize the balanced tree
     println!("\nVisualizing quadtree AFTER balancing...");
-    if let Err(e) = tree.visualize(&scratch_path_str, "example_3_weakly_balanced") {
+    if let Err(e) = tree.visualize(&scratch_path_str, "example_3_weakly_balanced", false) {
+        eprintln!("Visualization failed: {}", e);
+    }
+
+    Ok(())
+}
+
+fn level_1_fully_refined(scratch_path_str: &str) -> Result<(), String> {
+    println!("----------------------------------------------------");
+    let title: &str = "level_1_fully_refined";
+    println!("Example: {}", title);
+
+    let mut tree: Quadtree = Quadtree::new(
+        Rectangle {
+            origin: Point { x: -1.0, y: -1.0 },
+            width: 2.0,
+            height: 2.0,
+        },
+        2,
+    );
+
+    tree.subdivide(); // L0 -> L1
+
+    println!("\nVisualizing quadtree...");
+    if let Err(e) = tree.visualize(&scratch_path_str, title, true) {
         eprintln!("Visualization failed: {}", e);
     }
 
@@ -207,31 +230,7 @@ fn transition_wine_glass(scratch_path_str: &str) -> Result<(), String> {
     se.subdivide(); // L1 -> L2
 
     println!("\nVisualizing quadtree...");
-    if let Err(e) = tree.visualize(&scratch_path_str, title) {
-        eprintln!("Visualization failed: {}", e);
-    }
-
-    Ok(())
-}
-
-fn level_1_fully_refined(scratch_path_str: &str) -> Result<(), String> {
-    println!("----------------------------------------------------");
-    let title: &str = "level_1_fully_refined";
-    println!("Example: {}", title);
-
-    let mut tree: Quadtree = Quadtree::new(
-        Rectangle {
-            origin: Point { x: -1.0, y: -1.0 },
-            width: 2.0,
-            height: 2.0,
-        },
-        2,
-    );
-
-    tree.subdivide(); // L0 -> L1
-
-    println!("\nVisualizing quadtree...");
-    if let Err(e) = tree.visualize(&scratch_path_str, title) {
+    if let Err(e) = tree.visualize(&scratch_path_str, title, true) {
         eprintln!("Visualization failed: {}", e);
     }
 
@@ -262,8 +261,8 @@ fn main() -> Result<(), String> {
         (point_stimulated_refinement, false),
         (manual_subdivision, false),
         (circle_with_balancing, false),
-        (transition_wine_glass, true),
         (level_1_fully_refined, true),
+        (transition_wine_glass, true),
     ];
 
     for (func, enabled) in examples {
