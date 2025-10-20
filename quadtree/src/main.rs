@@ -1,8 +1,8 @@
 // mod quadtree;  // Declare the quadtree module
 use dirs;
-use quadtree::*;
+use quadtree::*; // Bring all public items from quadtree into scope
 use std::f64::consts::PI;
-use std::fs; // Bring all public items from quadtree into scope
+use std::fs;
 
 fn circle_points(num_points: u32) -> Vec<Point> {
     let radius: f64 = 1.0;
@@ -63,7 +63,7 @@ fn point_stimulated_refinement(scratch_path_str: &str) -> Result<(), String> {
     // Visualize the balanced tree
     println!("\nVisualizing quadtree AFTER balancing...");
     if let Err(e) = tree.visualize(&scratch_path_str, "example_1_weakly_balanced") {
-        eprintln!("Visualization filed: {}", e);
+        eprintln!("Visualization failed: {}", e);
     }
     Ok(())
 }
@@ -126,7 +126,7 @@ fn manual_subdivision(scratch_path_str: &str) -> Result<(), String> {
     // Visualize the balanced tree
     println!("\nVisualizing quadtree AFTER balancing...");
     if let Err(e) = tree.visualize(&scratch_path_str, "example_2_weakly_balanced") {
-        eprintln!("Visualization filed: {}", e);
+        eprintln!("Visualization failed: {}", e);
     }
 
     Ok(())
@@ -176,10 +176,41 @@ fn circle_with_balancing(scratch_path_str: &str) -> Result<(), String> {
     // Visualize the balanced tree
     println!("\nVisualizing quadtree AFTER balancing...");
     if let Err(e) = tree.visualize(&scratch_path_str, "example_3_weakly_balanced") {
-        eprintln!("Visualization filed: {}", e);
+        eprintln!("Visualization failed: {}", e);
     }
 
     Ok(())
+}
+
+fn transition_wine_glass(scratch_path_str: &str) -> Result<(), String> {
+    println!("----------------------------------------------------");
+    println!("Example: Transition wine glass");
+
+    let mut tree: Quadtree = Quadtree::new(
+        Rectangle {
+            origin: Point { x: -1.0, y: -1.0 },
+            width: 2.0,
+            height: 2.0,
+        },
+        2,
+    );
+
+    tree.subdivide(); // L0 -> L1, then get the NE and SE children
+
+    let (ne, se) = match &mut tree.node {
+        Node::Children { ne, se, .. } => (ne, se),
+        _ => panic!("L1 NE and SE children should exist after subdivision."),
+    };
+
+    ne.subdivide(); // L1 -> L2
+    se.subdivide(); // L1 -> L2
+
+    println!("\nVisualizing quadtree...");
+    if let Err(e) = tree.visualize(&scratch_path_str, "template_wine_glass") {
+        eprintln!("Visualization failed: {}", e);
+    }
+
+    Ok(()) 
 }
 
 fn main() -> Result<(), String> {
@@ -205,7 +236,8 @@ fn main() -> Result<(), String> {
     let examples: &[(fn(&str) -> Result<(), String>, bool)] = &[
         (point_stimulated_refinement, false),
         (manual_subdivision, false),
-        (circle_with_balancing, true),
+        (circle_with_balancing, false),
+        (transition_wine_glass, true),
     ];
 
     for (func, enabled) in examples {
