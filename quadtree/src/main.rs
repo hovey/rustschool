@@ -14,7 +14,7 @@ fn circle_points(num_points: u32) -> Vec<Point> {
     for i in 0..num_points {
         let angle = i as f64 * angle_step;
 
-        let x: f64= radius * angle.cos();
+        let x: f64 = radius * angle.cos();
         let y: f64 = radius * angle.sin();
 
         points.push(Point { x, y });
@@ -22,30 +22,12 @@ fn circle_points(num_points: u32) -> Vec<Point> {
     points
 }
 
-fn main() -> Result<(), String> {
-    println!("Hello quadtree!");
-
-    // Step 0: Setup
-    // Create an output directory for output YAML and visualization
-    let home_dir =
-        dirs::home_dir().ok_or_else(|| "Could not find the home directory".to_string())?;
-    let scratch_path = home_dir.join("scratch").join("quadtree");
-
-    // Ensure the custom directory exists
-    fs::create_dir_all(&scratch_path).map_err(|e| {
-        format!(
-            "Failed to create custom directory {:?}: {}",
-            scratch_path, e
-        )
-    })?;
-    println!("Using scratch path: {:?}", scratch_path);
-    let scratch_path_str = scratch_path.to_string_lossy();
-
+fn point_stimulated_refinement(scratch_path_str: &str) -> Result<(), String> {
     // Example 1
     println!("----------------------------------------------------");
     println!("Example 1: Quadtree Creation and Levels");
     // Create a L0 quadtree with a maximum of five refinement levels
-    let mut tree_1 = Quadtree::new(
+    let mut tree = Quadtree::new(
         Rectangle {
             origin: Point { x: 1.0, y: -1.0 },
             width: 2.0,
@@ -56,41 +38,44 @@ fn main() -> Result<(), String> {
 
     println!("Inserting points...");
     // ne_ne_sw_sw_ne quadrant (up to level 5 refinement)
-    tree_1.insert(Point { x: 2.6, y: 0.6 });
+    tree.insert(Point { x: 2.6, y: 0.6 });
 
     // println!("\nQuadtree before refinement:");
-    // println!("{:#?}", tree_1);
+    // println!("{:#?}", tree);
 
     println!("\nRefining quadtree...");
-    tree_1.refine();
+    tree.refine();
 
     // println!("\nQuadtree after refinement:");
-    // println!("{:#?}", tree_1);
+    // println!("{:#?}", tree);
 
     // Visualize the unbalanced tree
     println!("\nVisualizing quadtree BEFORE balancing...");
-    if let Err(e) = tree_1.visualize(&scratch_path_str, "example_1_before_balancing") {
+    if let Err(e) = tree.visualize(&scratch_path_str, "example_1_before_balancing") {
         eprintln!("Visualization failed: {}", e);
     }
 
     // Run the weak balancing algorithm
     println!("\nRunning weak_balance()...");
-    tree_1.weak_balance();
+    tree.weak_balance();
     println!("Balancing complete.");
 
     // Visualize the balanced tree
     println!("\nVisualizing quadtree AFTER balancing...");
-    if let Err(e) = tree_1.visualize(&scratch_path_str, "example_1_weakly_balanced") {
+    if let Err(e) = tree.visualize(&scratch_path_str, "example_1_weakly_balanced") {
         eprintln!("Visualization filed: {}", e);
     }
+    Ok(())
+}
 
+fn manual_subdivision(scratch_path_str: &str) -> Result<(), String> {
     // Example 2
     // tree_n.insert(Point { x: 2.1, y: 0.1 });
     // Try to reproduce Figure 5 from
     // Pitzalis_2021_generalized_adaptive_refinement.pdf
     println!("----------------------------------------------------");
     println!("Example 2: Unbalanced and Weakly Balanced Quadtree");
-    let mut tree_2 = Quadtree::new(
+    let mut tree = Quadtree::new(
         Rectangle {
             origin: Point { x: 0.0, y: 0.0 },
             width: 4.0,
@@ -102,9 +87,9 @@ fn main() -> Result<(), String> {
     // subdivide four times to create an unbalanced quadtree
     println!("Creating an unbalanced tree...");
 
-    tree_2.subdivide(); // L0 -> L1
-                        // Get the NE child
-    let ne = match &mut tree_2.node {
+    tree.subdivide(); // L0 -> L1
+                      // Get the NE child
+    let ne = match &mut tree.node {
         Node::Children { ne, .. } => ne,
         _ => panic!("L1 NE child should exist."),
     };
@@ -129,26 +114,30 @@ fn main() -> Result<(), String> {
 
     // Visualize the unbalanced tree
     println!("\nVisualizing quadtree BEFORE balancing...");
-    if let Err(e) = tree_2.visualize(&scratch_path_str, "example_2_before_balancing") {
+    if let Err(e) = tree.visualize(&scratch_path_str, "example_2_before_balancing") {
         eprintln!("Visualization failed: {}", e);
     }
 
     // Run the weak balancing algorithm
     println!("\nRunning weak_balance()...");
-    tree_2.weak_balance();
+    tree.weak_balance();
     println!("Balancing complete.");
 
     // Visualize the balanced tree
     println!("\nVisualizing quadtree AFTER balancing...");
-    if let Err(e) = tree_2.visualize(&scratch_path_str, "example_2_weakly_balanced") {
+    if let Err(e) = tree.visualize(&scratch_path_str, "example_2_weakly_balanced") {
         eprintln!("Visualization filed: {}", e);
     }
 
+    Ok(())
+}
+
+fn circle_with_balancing(scratch_path_str: &str) -> Result<(), String> {
     // Example 3
     println!("----------------------------------------------------");
     println!("Example 3: Quadtree for a Circle");
     // Create a L0 quadtree with a maximum of five refinement levels
-    let mut tree_3 = Quadtree::new(
+    let mut tree = Quadtree::new(
         Rectangle {
             origin: Point { x: -1.0, y: -1.0 },
             width: 2.0,
@@ -161,33 +150,68 @@ fn main() -> Result<(), String> {
     let circle_points = circle_points(100);
     for point in circle_points {
         // println!("Inserting point: {:?}", point);
-        tree_3.insert(point);
+        tree.insert(point);
     }
 
     // println!("\nQuadtree before refinement:");
-    // println!("{:#?}", tree_3);
+    // println!("{:#?}", tree);
 
     println!("\nRefining quadtree...");
-    tree_3.refine();
+    tree.refine();
 
     // println!("\nQuadtree after refinement:");
-    // println!("{:#?}", tree_3);
+    // println!("{:#?}", tree);
 
     // Visualize the unbalanced tree
     println!("\nVisualizing quadtree BEFORE balancing...");
-    if let Err(e) = tree_3.visualize(&scratch_path_str, "example_3_before_balancing") {
+    if let Err(e) = tree.visualize(&scratch_path_str, "example_3_before_balancing") {
         eprintln!("Visualization failed: {}", e);
     }
 
     // Run the weak balancing algorithm
     println!("\nRunning weak_balance()...");
-    tree_3.weak_balance();
+    tree.weak_balance();
     println!("Balancing complete.");
 
     // Visualize the balanced tree
     println!("\nVisualizing quadtree AFTER balancing...");
-    if let Err(e) = tree_3.visualize(&scratch_path_str, "example_3_weakly_balanced") {
+    if let Err(e) = tree.visualize(&scratch_path_str, "example_3_weakly_balanced") {
         eprintln!("Visualization filed: {}", e);
+    }
+
+    Ok(())
+}
+
+fn main() -> Result<(), String> {
+    println!("Hello quadtree!");
+
+    // Step 0: Setup
+    // Create an output directory for output YAML and visualization
+    let home_dir =
+        dirs::home_dir().ok_or_else(|| "Could not find the home directory".to_string())?;
+    let scratch_path = home_dir.join("scratch").join("quadtree");
+
+    // Ensure the custom directory exists
+    fs::create_dir_all(&scratch_path).map_err(|e| {
+        format!(
+            "Failed to create custom directory {:?}: {}",
+            scratch_path, e
+        )
+    })?;
+    println!("Using scratch path: {:?}", scratch_path);
+    let scratch_path_str = scratch_path.to_string_lossy();
+
+    // Examples library and selection
+    let examples: &[(fn(&str) -> Result<(), String>, bool)] = &[
+        (point_stimulated_refinement, false),
+        (manual_subdivision, false),
+        (circle_with_balancing, true),
+    ];
+
+    for (func, enabled) in examples {
+        if *enabled {
+            func(&scratch_path_str)?;
+        }
     }
 
     Ok(())
