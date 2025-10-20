@@ -117,38 +117,47 @@ This section outlines the algorithm for identifying hanging nodes and processing
 
 A "hanging edge" is an edge of a cell that has one or more vertices of adjacent, smaller cells lying on it. The goal is to produce a list of these hanging edges.
 
-- **[ ] Create a recursive traversal function.**
-  - This function will walk the quadtree and inspect the boundaries between cells (e.g., `find_hanging_edges_recursive`).
-
-- **[ ] Process internal boundaries.**
-  - Inside the recursive function, when encountering a `Node::Children`, check the four internal boundaries for differences in refinement level.
-
-- **[ ] Compare refinement levels.**
-  - For each boundary, if one adjacent cell is a `Leaf` and the other is `Children`, a hanging edge has been found.
-
-- **[ ] Store the results in a structured way.**
-  - When a hanging edge is found, store its properties in a custom struct:
-    ```rust
-    struct HangingEdge {
-        // The two vertices of the original, larger edge
-        v1: Point,
-        v2: Point,
-        // The node(s) that "hang" on this edge
-        hanging_nodes: Vec<Point>,
-    }
-    ```
-
-- **[ ] Recurse to deeper levels.**
-  - After checking the internal boundaries of a node, call the recursive function on its four children to find hanging edges at deeper levels.
+- **[x] Create a recursive traversal function.**
+- **[x] Process internal boundaries.**
+- **[x] Compare refinement levels.**
+- **[x] Store the results in a structured way.**
+- **[x] Recurse to deeper levels.**
 
 #### Stage 2: "Pairing" the Hanging Nodes
 
 "Pairing" the hanging nodes can be interpreted as creating new, smaller edges from the hanging edges identified in Stage 1.
 
-- **[ ] Process the `HangingEdge` list.**
-  - Iterate through the `Vec<HangingEdge>` generated in Stage 1.
+- [ ] **Process the `HangingEdge` list.**
+- [ ] **Create the pairs of new edges.**
 
-- **[ ] Create the pairs of new edges.**
-  - For each `HangingEdge`, use its original vertices (`v1`, `v2`) and the hanging node (`h`) to define two new, smaller edges:
-    - **Pair-Part 1:** The edge from `v1` to `h`.
-    - **Pair-Part 2:** The edge from `h` to `v2`.
+## Phase 3: Dual Mesh Generation
+
+This phase focuses on generating a conforming quadrilateral mesh from the adaptive quadtree using a dual-based approach, as described in the project's reference literature.
+
+### 1. Implement Dual Vertex Generation (Completed)
+
+This is the first step in constructing the dual mesh. The goal is to identify the location of all dual vertices, which are located at the center of each leaf cell in the quadtree.
+
+- [x] **Create `dual_vertices` function**.
+- [x] **Implement Recursive Traversal**.
+
+### 2. Implement Dual Edge Generation (Simple Case) (Completed)
+
+This step connects the dual vertices generated in the previous step, but only for the simple case where adjacent leaf cells have the same refinement level.
+
+- [x] **Create `dual_edges` function**.
+- [x] **Reuse Neighbor-Finding Logic**.
+- [x] **Connect Centers of Same-Level Neighbors**.
+- [x] **Return Edges**.
+
+### 3. Implement Dual Edge Generation (Adaptive Case) (TODO)
+
+This step will handle the generation of dual edges where quadtree cells of different refinement levels meet.
+
+- [ ] **Refactor `HangingEdge` struct**:
+  - Add a `coarse_cell_center: Point` field to the struct to make it more informative.
+- [ ] **Update `find_interface_hanging_edge` function**:
+  - Modify the function to correctly populate the new `coarse_cell_center` field.
+- [ ] **Extend `dual_edges` function**:
+  - Add logic to process the `HangingEdge` list.
+  - For each hanging edge, generate the "transition" edges that connect the coarse cell's center to the hanging node(s) on its boundary.
