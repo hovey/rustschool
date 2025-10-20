@@ -184,7 +184,8 @@ fn circle_with_balancing(scratch_path_str: &str) -> Result<(), String> {
 
 fn transition_wine_glass(scratch_path_str: &str) -> Result<(), String> {
     println!("----------------------------------------------------");
-    println!("Example: Transition wine glass");
+    let title: &str = "template_wine_glass";
+    println!("Example: {}", title);
 
     let mut tree: Quadtree = Quadtree::new(
         Rectangle {
@@ -206,7 +207,31 @@ fn transition_wine_glass(scratch_path_str: &str) -> Result<(), String> {
     se.subdivide(); // L1 -> L2
 
     println!("\nVisualizing quadtree...");
-    if let Err(e) = tree.visualize(&scratch_path_str, "template_wine_glass") {
+    if let Err(e) = tree.visualize(&scratch_path_str, title) {
+        eprintln!("Visualization failed: {}", e);
+    }
+
+    Ok(())
+}
+
+fn level_1_fully_refined(scratch_path_str: &str) -> Result<(), String> {
+    println!("----------------------------------------------------");
+    let title: &str = "level_1_fully_refined";
+    println!("Example: {}", title);
+
+    let mut tree: Quadtree = Quadtree::new(
+        Rectangle {
+            origin: Point { x: -1.0, y: -1.0 },
+            width: 2.0,
+            height: 2.0,
+        },
+        2,
+    );
+
+    tree.subdivide(); // L0 -> L1
+
+    println!("\nVisualizing quadtree...");
+    if let Err(e) = tree.visualize(&scratch_path_str, title) {
         eprintln!("Visualization failed: {}", e);
     }
 
@@ -238,6 +263,7 @@ fn main() -> Result<(), String> {
         (manual_subdivision, false),
         (circle_with_balancing, false),
         (transition_wine_glass, true),
+        (level_1_fully_refined, true),
     ];
 
     for (func, enabled) in examples {
