@@ -386,29 +386,6 @@ impl Quadtree {
         }
     }
 
-    // /// Recursively finds all leaves that intersect with a given search area.
-    // fn find_leaves_in_bounds<'a>(
-    //     &'a self,
-    //     search_area: &Rectangle,
-    //     found_leaves: &mut Vec<&'a Quadtree>,
-    // ) {
-    //     if !self.boundary.intersects(search_area) {
-    //         return;
-    //     }
-
-    //     match &self.node {
-    //         Node::Leaf { .. } => {
-    //             found_leaves.push(self);
-    //         }
-    //         Node::Children { nw, ne, sw, se } => {
-    //             nw.find_leaves_in_bounds(search_area, found_leaves);
-    //             ne.find_leaves_in_bounds(search_area, found_leaves);
-    //             sw.find_leaves_in_bounds(search_area, found_leaves);
-    //             se.find_leaves_in_bounds(search_area, found_leaves);
-    //         }
-    //     }
-    // }
-
     /// Finds all leaf nodes that share a face (edge) with a given boundary.
     /// This is the new, traversal-based implementation.
     fn face_neighbors<'a>(&'a self, leaf_boundary: &Rectangle) -> Vec<&'a Quadtree> {
@@ -635,6 +612,41 @@ impl Quadtree {
             }
             // No hanging edge at this interface.
             _ => None,
+        }
+    }
+
+    /// Computes the dual vertices of the quadtree.
+    ///
+    /// A dual vertex is located at the center of each leaf cell in the quadtree.
+    /// This is the first step in constructing a dual mesh.
+    ///
+    /// # Returns
+    ///
+    /// A `Vec<Point>` containing the coordinates of all dual vertices.
+    pub fn dual_vertices(&self) -> Vec<Point> {
+        let mut vertices = Vec::new();
+        self.dual_vertices_recursive(&mut vertices);
+        vertices
+    }
+
+    /// Recursive helper function to collect the center points fo all leaf nodes.
+    fn dual_vertices_recursive(&self, vertices: &mut Vec<Point>) {
+        match &self.node {
+            Node::Leaf { .. } => {
+                // For a leaf node, the dual vertes is at its center.
+                let center = Point {
+                    x: self.boundary.origin.x + self.boundary.width / 2.0,
+                    y: self.boundary.origin.y + self.boundary.height / 2.0,
+                };
+                vertices.push(center);
+            }
+            Node::Children { nw, ne, sw, se } => {
+                // If it's not a leaf, recurse into the children.
+                nw.dual_vertices_recursive(vertices);
+                ne.dual_vertices_recursive(vertices);
+                sw.dual_vertices_recursive(vertices);
+                se.dual_vertices_recursive(vertices);
+            }
         }
     }
 
