@@ -58,6 +58,21 @@ enum Direction {
     West,
 }
 
+/// Represents a "hanging edge" in the quadtree.
+///
+/// A hanging edge is an edge of a larger cell that has one or more vertices
+/// of adjacent, smaller cells lying on it.
+#[derive(Debug, PartialEq, Serialize, Clone)]
+pub struct HangingEdge {
+    /// The first vertex of the coarse edge.
+    pub v1: Point,
+    /// The second vertex of the coarse edge.
+    pub v2: Point,
+    /// The list of hanging nodes that lie on this edge.
+    /// For a 2:1 balanced tree, this will contain exactly one point.
+    pub hanging_nodes: Vec<Point>,
+}
+
 impl Rectangle {
     /// Checks if a point is within the rectangle's boundary.
     ///
@@ -77,6 +92,21 @@ impl Rectangle {
     //         || self.origin.y > other.origin.y + other.height
     //         || self.origin.y + self.height < other.origin.y)
     // }
+
+    /// Gets the vertices of an edge given a direction.
+    fn edge_vertices(&self, direction: Direction) -> (Point, Point) {
+        let x0 = self.origin.x;
+        let y0 = self.origin.y;
+        let x1 = x0 + self.width;
+        let y1 = y0 + self.height;
+
+        match direction {
+            Direction::North => (Point { x: x0, y: y1 }, Point { x: x1, y: y1 }),
+            Direction::East => (Point { x: x1, y: y0 }, Point { x: x1, y: y1 }),
+            Direction::South => (Point { x: x0, y: y0 }, Point { x: x1, y: y0 }),
+            Direction::West => (Point { x: x0, y: y0 }, Point { x: x0, y: y1 }),
+        }
+    }
 }
 
 impl Quadtree {
@@ -520,6 +550,94 @@ impl Quadtree {
         }
     }
 
+    /// Finds all hanging edges in the quadtree
+    ///
+    /// This function traverses the tree and identifies all "hanging edges",
+    /// which are edges of a leaf cell that are adjacent to a more refined
+    /// (subdivided) cell.
+    ///
+    /// # Returns
+    ///
+    /// A `Vec<HangingEdge>` containing all the identified hanging edges.
+    pub fn hanging_edges(&self) -> Vec<HangingEdge> {
+        let mut hanging_edges = Vec::new();
+        self.hanging_edges_recursive(&mut hanging_edges);
+        // Note: This simple traversal might find the same edge twice from
+        // opposite sides.  For a final implementation, we might consider
+        // using a HashSet to store unique edges before returning a Vec
+        hanging_edges
+    }
+
+    /// Recursive helper function to find hanging edges.
+    fn hanging_edges_recursive(&self, hanging_edges: &mut Vec<HangingEdge>) {
+        if let Node::Children { nw, ne, sw, se } = &self.node {
+            // Check vertical interfaces
+            if let Some(edge) = Self::find_interface_hanging_edge(nw, ne, Direction::East) {
+                hanging_edges.push(edge);
+            }
+            if let Some(edge) = Self::find_interface_hanging_edge(sw, se, Direction::East) {
+                hanging_edges.push(edge);
+            }
+
+            // Check horizontal interfaces
+            if let Some(edge) = Self::find_interface_hanging_edge(nw, sw, Direction::South) {
+                hanging_edges.push(edge);
+            }
+            if let Some(edge) = Self::find_interface_hanging_edge(ne, se, Direction::South) {
+                hanging_edges.push(edge);
+            }
+
+            // Recurse into children
+            nw.hanging_edges_recursive(hanging_edges);
+            ne.hanging_edges_recursive(hanging_edges);
+            sw.hanging_edges_recursive(hanging_edges);
+            se.hanging_edges_recursive(hanging_edges);
+        }
+    }
+
+    /// Checks for a hanging edge between two adjacent nodes and returns it if found.
+    fn find_interface_hanging_edge(
+        node1: &Quadtree,
+        node2: &Quadtree,
+        direction_from_node1: Direction,
+    ) -> Option<HangingEdge> {
+        match (&node1.node, &node2.node) {
+            // Case 1: node1 is a leaf, node2 is subdivided.
+            (Node::Leaf { .. }, Node::Children { .. }) => {
+                let (v1, v2) = node1.boundary.edge_vertices(direction_from_node1);
+                let hanging_node = Point {
+                    x: (v1.x + v2.x) / 2.0,
+                    y: (v1.y + v2.y) / 2.0,
+                };
+                Some(HangingEdge {
+                    v1,
+                    v2,
+                    hanging_nodes: vec![hanging_node],
+                })
+            }
+            // Case 2: node2 is a leaf, node1 is subdivided.
+            (Node::Children { .. }, Node::Leaf { .. }) => {
+                let opposite_direction = match direction_from_node1 {
+                    Direction::East => Direction::West,
+                    Direction::South => Direction::North,
+                    _ => unreachable!(),
+                };
+                let (v1, v2) = node2.boundary.edge_vertices(opposite_direction);
+                let hanging_node = Point {
+                    x: (v1.x + v2.x) / 2.0,
+                    y: (v1.y + v2.y) / 2.0,
+                };
+                Some(HangingEdge {
+                    v1,
+                    v2,
+                    hanging_nodes: vec![hanging_node],
+                })
+            }
+            // No hanging edge at this interface.
+            _ => None,
+        }
+    }
+
     pub fn to_yaml(&self) -> Result<String, serde_yaml::Error> {
         serde_yaml::to_string(self)
     }
@@ -695,7 +813,7 @@ mod tests {
         // L0: root
         // L1: NW, NE, SW, SE (all leaves)
         // L2: NE is subdivided -> NW_NW, NE_NE, NE_SW, NE_SE (leaves)
-        // L3: NE_SW is subdivded -> NE_SW_NW, NE_SW_NE, NE_SW_SW, NE_SW_SE (leaves)
+        // L3: NE_SW is subdivdded -> NE_SW_NW, NE_SW_NE, NE_SW_SW, NE_SW_SE (leaves)
         //
         // Imbalance:
         // The L3 leaf `NE_SW_NW` is face-adjacent to the roof's L1 `NW` leaf.

@@ -210,7 +210,7 @@ fn transition_wine_glass(scratch_path_str: &str) -> Result<(), String> {
         eprintln!("Visualization failed: {}", e);
     }
 
-    Ok(()) 
+    Ok(())
 }
 
 fn main() -> Result<(), String> {
