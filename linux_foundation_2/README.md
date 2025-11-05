@@ -51,4 +51,47 @@ match guards and alias
 Binding
 
 
+Day 3
+
+Custom error handling
+https://crates.io/crates/thiserror (604m downloads)
+https://crates.io/crates/anyhow (450m downloads)
+ptr_info_lib (by Pascal Van Dam)
+https://crates.io/crates/ptr_info_lib
+Poortier Management B.V.
+Bergen (Limburg) NL
+https://github.com/pascal71
+
+
+casting
+* use from() and into(), and returns if the cast was or was not successful
+use std::convert::TryInto
+
+.tryinto() versus .into()
+
+Projects hierarchy
+- Package is a bundle of binary (or binaries) and (not more than one) library crate.
+- - Crate a is a compilation unit, either a binary crate or a library crate.
+- - - A module is namespace.
+- - - - Paths - absolute or relative paths
+
+
+Rust does not have coverage, but crate: cargo-tarpaulin (2m downloads)
+
+Iterators
+
+lazy evaluation, only does the evalution until user asks for next item (thus efficient)
+
+* adapter iterators, iterator goes in and another iterator comes out
+* consumer iterators, iterator goes in and a type comes out
+
+.filter.map transform into a new item and collect the result into a new collection (a consuming operation)
+.filter.for_each to execute in-place mutation
+
+Associated function, such as new (Constructor), called with Type::new(), does not take self.
+Versus a method, takes self, and uses the instance.method(...) pattern
+
+Chad prefers to use the ::new() asssociated function because it can check state is valid
+on construction, whereas without the ::new() there is no way to guard against directly creating
+bad Structs/Enums e.g., radius with negative values, bad path variables.
 
