@@ -66,6 +66,12 @@ fn print_perimeter(shape: &dyn Perimeter) {
     println!("The perimeter is {:.2}", shape.perimeter());
 }
 
+// From Dr. Buche
+// fn print_perimeter<T>(shape: &T)
+// where T: Perimeter {
+//     println!("The perimeter is {:.2}", shape.perimeter());
+// }
+
 fn main() {
     let sq = Square::new(10.0);
     let tr = Triangle::new(3.0, 4.0, 5.0);

@@ -118,3 +118,29 @@ Need to show an example of static versus dynamic dispatch.
 
 Generics
 
+Trait bounds and Generics seem like a large, difficult area.
+
+3rd party tools
+Valgrind, flamegraph 
+
+rust-lldb is not really stable, prefer rust gdb
+but lldb for macos, and lldb shows a bit more context when debugging
+
+vscode also works well.
+
+Lifetimes
+
+Concurrency
+* Kernel threads (threads)
+* Channels (mpsc)
+* Async (old school, Arc, AtomicUsize)
+* Rayon (iterators over multiple cores/threads)
+
+Parks, best book on Async on Rust
+
+Use threads for lots of repetitive computation, e.g., medical images.
+For lots of io, use async
+Recommend use of tokio, extensively used and well documented.
+Use async when io bound.
+When compute bound, then use normal thread concurrency.
+
