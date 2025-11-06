@@ -95,3 +95,26 @@ Chad prefers to use the ::new() asssociated function because it can check state 
 on construction, whereas without the ::new() there is no way to guard against directly creating
 bad Structs/Enums e.g., radius with negative values, bad path variables.
 
+
+Day 4
+
+cargo-nextest with .config/nextest.toml for testing with CI/CD
+https://nexte.st
+
+Trait bounds, useful but avoid overuse because it can be overly restrictive.
+Really we want to create abstraction through Traits, so to bound the trait with trait
+bounds dilutes the effectiveness of the trait.
+
+Prefer small, focused traits over large traits.  Large traits make the traits weakers
+and less used.
+
+Newtype pattern, it is a tuple struct.
+
+Marker traits - traits without methods.
+
+Page 817, dynamics dispatch, cat and dog speaking example.
+
+Need to show an example of static versus dynamic dispatch.
+
+Generics
+
