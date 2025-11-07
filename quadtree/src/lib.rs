@@ -153,7 +153,8 @@ impl Quadtree {
                 // if self.level < self.level_max {
                 //     self.subdivide();
                 // }
-                return true;
+                // return true;
+                true
             }
             Node::Children { nw, ne, sw, se } => {
                 // Create a performant version to avoid redundant boundary checks.
@@ -743,7 +744,8 @@ impl Quadtree {
         println!("Generated YAML data for '{}'.", file_suffix);
 
         // Create a temporary YAML output file with the suffix
-        let file_name = format!("quadtree_data_{}.yaml", file_suffix);
+        // let file_name = format!("quadtree_data_{}.yaml", file_suffix);
+        let file_name = format!("{}.yaml", file_suffix);
         let path_file_name = std::path::Path::new(scratch_path).join(&file_name);
         println!("Scratch YAML file path: {:?}", path_file_name);
 
@@ -759,8 +761,44 @@ impl Quadtree {
 
         let script_path = current_dir.join("visualize_quadtree.py");
 
+        // TODO: Check if the virtual environment has been loaded, and if it has not
+        // been loaded, then load it.  If the virtural environment does not exist, then
+        // warn the use that the virtual environment does not exist.
+        // Determine the path to the Python executable in a standard '.venv' directory.
+        // We check for 'bin/python' (Linux/macOS) and 'Scripts/python.exe' (Windows).
+        let venv_path = current_dir.join(".venv");
+        let python_exec_unix = venv_path.join("bin").join("python");
+        let python_exec_win = venv_path.join("Scripts").join("python.exe");
+
+        let python_path = if python_exec_unix.exists() {
+            Some(python_exec_unix)
+        } else if python_exec_win.exists() {
+            Some(python_exec_win)
+        } else {
+            // Warn if the virtual environment is not found.
+            eprintln!("Warning: Virtual environment (.venv) Python executable is not found at {:?} or {:?}.", python_exec_unix, python_exec_win);
+            eprint!("Attempting to use the system 'python' or 'python3'.");
+            None
+        };
+        // println!("Using Python at: {:?}", &python_path);
+
+        let python_command = python_path
+            .as_deref() // Use the determined path if found
+            .unwrap_or_else(|| {
+                // Fallback to "python" or "python3" if the venv is not found
+                // Note: The original code used "python", so we keep that as the
+                // primary fallback.
+                if cfg!(target_os = "windows") {
+                    std::path::Path::new("python")
+                } else {
+                    std::path::Path::new("python3")
+                }
+            });
+        println!("Using Python command at: {:?}", &python_command);
+
         // Execute the Python script
-        let output = Command::new("python") // Use "python" or "python3" depending on your system
+        // let output = Command::new("python") // Use "python" or "python3" depending on your system
+        let output = Command::new(python_command)
             .arg(&script_path)
             .arg(&path_file_name) // Pass the path to the YAML file as an argument
             .output()

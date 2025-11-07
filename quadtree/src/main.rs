@@ -1,4 +1,4 @@
-use dirs;
+// use dirs;
 use quadtree::*; // Bring all public items from quadtree into scope
 use std::f64::consts::PI;
 use std::fs;
@@ -262,7 +262,7 @@ fn main() -> Result<(), String> {
         (manual_subdivision, false),
         (circle_with_balancing, false),
         (level_1_fully_refined, true),
-        (transition_wine_glass, true),
+        (transition_wine_glass, false),
     ];
 
     for (func, enabled) in examples {
