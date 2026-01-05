@@ -261,8 +261,8 @@ fn main() -> Result<(), String> {
         (point_stimulated_refinement, false),
         (manual_subdivision, false),
         (circle_with_balancing, false),
-        (level_1_fully_refined, true),
-        (transition_wine_glass, false),
+        (level_1_fully_refined, false),
+        (transition_wine_glass, true),
     ];
 
     for (func, enabled) in examples {
